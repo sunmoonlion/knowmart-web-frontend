@@ -8,6 +8,8 @@ import { isPlainWebAddress } from '@/contracts/cross-app'
 const versionSchema = z
   .object({
     version: z.string().regex(/^[1-9][0-9]{0,5}$/),
+    // 运行方：这个分身在哪个应用里运行；从哪个应用来就只能请运行方是它的
+    runtime: z.string().regex(/^[a-z][a-z0-9-]{0,31}$/),
     digest: z.string().regex(/^sha256:[0-9a-f]{64}$/),
     status: z.enum(['active', 'stopped']),
     delivered_at: z.string().min(1),

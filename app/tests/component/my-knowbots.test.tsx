@@ -30,12 +30,14 @@ const list = {
       versions: [
         {
           version: '1',
+          runtime: 'investment',
           digest: 'sha256:' + 'a'.repeat(64),
           status: 'stopped' as const,
           delivered_at: '2026-10-16T00:00:00Z',
         },
         {
           version: '2',
+          runtime: 'investment',
           digest: 'sha256:' + 'b'.repeat(64),
           status: 'active' as const,
           delivered_at: '2026-10-16T01:00:00Z',
@@ -97,6 +99,17 @@ describe('MyKnowbots', () => {
       { app: 'investment', ref: 'task-42' },
       'csrf-token-value-that-is-long-enough-1234',
     )
+  })
+
+  it('offers summon only for versions that run in the app the user came from', async () => {
+    origin.data = {
+      app: 'other-runtime',
+      ref: 'x',
+      return_url: 'https://other.example.test/back?ref=x',
+    }
+    renderList()
+    await screen.findByText('财务分析与预测')
+    expect(screen.queryByRole('button', { name: '请这位' })).toBeNull()
   })
 
   it('does not offer summon when the origin has no registered return', async () => {

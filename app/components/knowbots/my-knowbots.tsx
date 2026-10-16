@@ -61,7 +61,7 @@ export function MyKnowbots({ csrfToken }: MyKnowbotsProps) {
           <KnowbotCard
             key={knowbot.knowbot_id}
             knowbot={knowbot}
-            canSummon={summoning !== null}
+            summonFrom={summoning?.app ?? null}
             busy={stop.isPending || summon.isPending}
             onStop={(version) => {
               setFailed(null)
@@ -80,13 +80,14 @@ export function MyKnowbots({ csrfToken }: MyKnowbotsProps) {
 
 type KnowbotCardProps = {
   knowbot: Knowbot
-  canSummon: boolean
+  // 从哪个应用带过来的（认得且登记了回跳地址）；只对运行方是它的版本显示「请这位」
+  summonFrom: string | null
   busy: boolean
   onStop: (version: string) => void
   onSummon: (version: string) => void
 }
 
-function KnowbotCard({ knowbot, canSummon, busy, onStop, onSummon }: KnowbotCardProps) {
+function KnowbotCard({ knowbot, summonFrom, busy, onStop, onSummon }: KnowbotCardProps) {
   const t = useTranslations('knowbots')
   const newestFirst = [...knowbot.versions].reverse()
   return (
@@ -99,7 +100,7 @@ function KnowbotCard({ knowbot, canSummon, busy, onStop, onSummon }: KnowbotCard
             key={v.version}
             version={v}
             current={v.version === knowbot.current_version}
-            canSummon={canSummon}
+            canSummon={summonFrom !== null && v.runtime === summonFrom}
             busy={busy}
             onStop={() => onStop(v.version)}
             onSummon={() => onSummon(v.version)}
