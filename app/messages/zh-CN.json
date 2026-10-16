@@ -48,7 +48,8 @@
   "nav": {
     "home": "首页",
     "dashboard": "控制台",
-    "settings": "设置"
+    "settings": "设置",
+    "knowbots": "我的分身"
   },
   "interaction": {
     "loading": "正在加载参考运行…",
@@ -80,5 +81,21 @@
       "offline": "正在重连",
       "closed": "已结束"
     }
+  },
+  "knowbots": {
+    "title": "我的分身",
+    "intro": "分身是按你的方法、用你的数据做成的，只归你自己。在 knowlab 做好、你验收后会出现在这里。",
+    "loading": "正在读取……",
+    "loadFailed": "读取失败，请刷新再试。",
+    "empty": "你还没有分身。",
+    "fromWorkbench": "从工作台来：选一个版本，点「请这位」回到工作台。",
+    "version": "第 {version} 版",
+    "current": "最新",
+    "active": "可用",
+    "stopped": "已停用",
+    "summon": "请这位",
+    "summonFailed": "没能回到工作台，请再试一次。",
+    "stop": "停用",
+    "stopFailed": "停用失败，请再试一次。"
   }
 }

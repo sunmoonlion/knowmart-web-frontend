@@ -48,7 +48,8 @@
   "nav": {
     "home": "Home",
     "dashboard": "Dashboard",
-    "settings": "Settings"
+    "settings": "Settings",
+    "knowbots": "My knowbots"
   },
   "interaction": {
     "loading": "Loading the reference run...",
@@ -80,5 +81,21 @@
       "offline": "Reconnecting",
       "closed": "Complete"
     }
+  },
+  "knowbots": {
+    "title": "My knowbots",
+    "intro": "A knowbot follows your method with your data and belongs only to you. It appears here after it is built in knowlab and you accept it.",
+    "loading": "Loading…",
+    "loadFailed": "Could not load. Refresh and try again.",
+    "empty": "You have no knowbots yet.",
+    "fromWorkbench": "From the workbench: pick a version and choose “Use this one” to go back.",
+    "version": "Version {version}",
+    "current": "latest",
+    "active": "available",
+    "stopped": "stopped",
+    "summon": "Use this one",
+    "summonFailed": "Could not go back to the workbench. Try again.",
+    "stop": "Stop",
+    "stopFailed": "Could not stop it. Try again."
   }
 }
