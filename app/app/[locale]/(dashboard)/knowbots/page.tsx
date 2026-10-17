@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 
 import { LogoutButton } from '@/components/auth/logout-button'
+import { SignedInAs, signedInName } from '@/components/auth/signed-in-as'
 import { MyKnowbots } from '@/components/knowbots/my-knowbots'
 import { requireBrowserSession } from '@/lib/server/auth-session'
 
@@ -39,12 +40,18 @@ export default async function KnowbotsPage({
         <Link href={`/${locale}/dashboard`} className="text-muted-foreground text-sm">
           {tNav('dashboard')}
         </Link>
-        <LogoutButton
-          csrfToken={session.csrf_token}
-          locale={locale}
-          label={tAuth('logout')}
-          errorLabel={tAuth('logoutFailed')}
-        />
+        <div className="flex items-center gap-4">
+          <SignedInAs
+            label={tAuth('signedInAs', { name: signedInName(session.user) })}
+            email={session.user.email}
+          />
+          <LogoutButton
+            csrfToken={session.csrf_token}
+            locale={locale}
+            label={tAuth('logout')}
+            errorLabel={tAuth('logoutFailed')}
+          />
+        </div>
       </header>
       <main className="p-8">
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
