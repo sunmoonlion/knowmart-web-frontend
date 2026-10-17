@@ -30,14 +30,14 @@ const list = {
       versions: [
         {
           version: '1',
-          runtime: 'investment',
+          runtime: 'knowbench',
           digest: 'sha256:' + 'a'.repeat(64),
           status: 'stopped' as const,
           delivered_at: '2026-10-16T00:00:00Z',
         },
         {
           version: '2',
-          runtime: 'investment',
+          runtime: 'knowbench',
           digest: 'sha256:' + 'b'.repeat(64),
           status: 'active' as const,
           delivered_at: '2026-10-16T01:00:00Z',
@@ -79,24 +79,24 @@ describe('MyKnowbots', () => {
 
   it('goes back to the workbench with the chosen version', async () => {
     origin.data = {
-      app: 'investment',
+      app: 'knowbench',
       ref: 'task-42',
-      return_url: 'https://investment.example.test/zh-CN/workbench?ref=task-42',
+      return_url: 'https://knowbench.example.test/zh-CN/workbench?ref=task-42',
     }
     vi.mocked(summonReturnUrl).mockResolvedValue(
-      'https://investment.example.test/zh-CN/workbench?ref=task-42&knowbot=x%401',
+      'https://knowbench.example.test/zh-CN/workbench?ref=task-42&knowbot=x%401',
     )
     renderList()
     fireEvent.click(await screen.findByRole('button', { name: '请这位' }))
     await waitFor(() =>
       expect(leaveTo).toHaveBeenCalledWith(
-        'https://investment.example.test/zh-CN/workbench?ref=task-42&knowbot=x%401',
+        'https://knowbench.example.test/zh-CN/workbench?ref=task-42&knowbot=x%401',
       ),
     )
     expect(summonReturnUrl).toHaveBeenCalledWith(
       KNOWBOT,
       '2',
-      { app: 'investment', ref: 'task-42' },
+      { app: 'knowbench', ref: 'task-42' },
       'csrf-token-value-that-is-long-enough-1234',
     )
   })
