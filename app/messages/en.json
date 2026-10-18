@@ -49,7 +49,7 @@
     "home": "Home",
     "dashboard": "Dashboard",
     "settings": "Settings",
-    "knowbots": "My knowbots"
+    "knowbots": "Experts"
   },
   "interaction": {
     "loading": "Loading the reference run...",
@@ -83,11 +83,11 @@
     }
   },
   "knowbots": {
-    "title": "My knowbots",
-    "intro": "A knowbot follows your method with your data and belongs only to you. It appears here after it is built in knowlab and passes its tests.",
+    "title": "Experts",
+    "intro": "An expert follows its author's method with the author's data. It appears here after it is built in knowlab and passes its tests.",
     "loading": "Loading…",
     "loadFailed": "Could not load. Refresh and try again.",
-    "empty": "You have no knowbots yet.",
+    "empty": "No experts yet.",
     "fromWorkbench": "From the workbench: pick a version and choose “Use this one” to go back.",
     "version": "Version {version}",
     "current": "latest",

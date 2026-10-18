@@ -49,7 +49,7 @@
     "home": "首页",
     "dashboard": "控制台",
     "settings": "设置",
-    "knowbots": "我的分身"
+    "knowbots": "专家"
   },
   "interaction": {
     "loading": "正在加载参考运行…",
@@ -83,11 +83,11 @@
     }
   },
   "knowbots": {
-    "title": "我的分身",
-    "intro": "分身是按你的方法、用你的数据做成的，只归你自己。在 knowlab 做好、测试通过后会出现在这里。",
+    "title": "专家",
+    "intro": "专家是按作者的方法、用作者的数据做成的。在 knowlab 做好、测试通过后会出现在这里。",
     "loading": "正在读取……",
     "loadFailed": "读取失败，请刷新再试。",
-    "empty": "你还没有分身。",
+    "empty": "还没有专家。",
     "fromWorkbench": "从工作台来：选一个版本，点「请这位」回到工作台。",
     "version": "第 {version} 版",
     "current": "最新",
