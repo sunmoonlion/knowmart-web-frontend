@@ -382,9 +382,10 @@ function ExpertCard({
 }) {
   const t = useTranslations('experts')
   return (
-    <article className="flex h-full flex-col gap-2 rounded-lg border p-4">
+    // 整张卡片都能点进详情（qwen-006 走查：只点得动标题）：标题链接铺满卡片，按钮浮在上层
+    <article className="hover:border-primary/60 relative flex h-full flex-col gap-2 rounded-lg border p-4">
       <h2 className="font-semibold">
-        <Link href={href} className="hover:underline">
+        <Link href={href} className="after:absolute after:inset-0 hover:underline">
           {item.name}
         </Link>
       </h2>
@@ -392,7 +393,7 @@ function ExpertCard({
       <p className="text-muted-foreground text-xs tabular-nums">
         {item.category.name} · {t('version', { version: item.version })}
       </p>
-      <div className="mt-auto pt-1">
+      <div className="relative z-10 mt-auto pt-1">
         {summoning ? (
           item.summonable ? (
             <Button size="sm" disabled={busy} onClick={onSummon}>
