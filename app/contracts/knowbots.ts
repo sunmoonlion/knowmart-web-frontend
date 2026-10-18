@@ -2,33 +2,8 @@ import { z } from 'zod'
 
 import { isPlainWebAddress } from '@/contracts/cross-app'
 
-// 「我的分身」的约定（后端 app/interfaces/endpoints/knowbot_routes.py，SDD 0027）。
-// 列表不带清单原文；分身只归当前用户。
-
-const versionSchema = z
-  .object({
-    version: z.string().regex(/^[1-9][0-9]{0,5}$/),
-    // 运行方：这个分身在哪个应用里运行；从哪个应用来就只能请运行方是它的
-    runtime: z.string().regex(/^[a-z][a-z0-9-]{0,31}$/),
-    digest: z.string().regex(/^sha256:[0-9a-f]{64}$/),
-    status: z.enum(['active', 'stopped']),
-    delivered_at: z.string().min(1),
-  })
-  .strict()
-
-const knowbotSchema = z
-  .object({
-    knowbot_id: z.string().uuid(),
-    name: z.string().min(1).max(80),
-    tagline: z.string().max(200),
-    current_version: z.string().nullable(),
-    versions: z.array(versionSchema),
-  })
-  .strict()
-
-export const myKnowbotsSchema = z
-  .object({ contract_version: z.literal(1), knowbots: z.array(knowbotSchema) })
-  .strict()
+// 「请这位」的约定（后端 app/interfaces/endpoints/knowbot_routes.py，SDD 0027）。
+// 目录与详情见 contracts/experts.ts（SDD 0032）。
 
 export const summonReturnSchema = z
   .object({
@@ -40,7 +15,3 @@ export const summonReturnSchema = z
       .refine((value) => isPlainWebAddress(value), 'must be an absolute http(s) URL'),
   })
   .strict()
-
-export type MyKnowbots = z.infer<typeof myKnowbotsSchema>
-export type Knowbot = z.infer<typeof knowbotSchema>
-export type KnowbotVersion = z.infer<typeof versionSchema>

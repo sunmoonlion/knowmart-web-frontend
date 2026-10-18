@@ -1,6 +1,6 @@
 'use client'
 
-import { myKnowbotsSchema, summonReturnSchema, type MyKnowbots } from '@/contracts/knowbots'
+import { summonReturnSchema } from '@/contracts/knowbots'
 import { requestJson } from '@/lib/common/api-client'
 
 export class KnowbotContractError extends Error {
@@ -12,12 +12,6 @@ export class KnowbotContractError extends Error {
 }
 
 const base = '/api/web/v1/knowbots'
-
-export async function fetchMyKnowbots(): Promise<MyKnowbots> {
-  const parsed = myKnowbotsSchema.safeParse(await requestJson(base))
-  if (!parsed.success) throw new KnowbotContractError({ cause: parsed.error })
-  return parsed.data
-}
 
 function versionPath(knowbotId: string, version: string, action: string): string {
   return `${base}/${encodeURIComponent(knowbotId)}/versions/${encodeURIComponent(version)}/${action}`

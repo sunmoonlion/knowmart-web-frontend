@@ -1,21 +1,21 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 
 import { LogoutButton } from '@/components/auth/logout-button'
 import { SignedInAs, signedInName } from '@/components/auth/signed-in-as'
-import { MyKnowbots } from '@/components/knowbots/my-knowbots'
+import { ExpertCatalog } from '@/components/knowbots/expert-catalog'
 import { requireBrowserSession } from '@/lib/server/auth-session'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('knowbots')
+  const t = await getTranslations('experts')
   return { title: t('title'), robots: { index: false, follow: false } }
 }
 
-export default async function KnowbotsPage({
+// 专家目录（SDD 0032）。路径沿用 /knowbots：工作台「请我的分身」与登录回跳都认它
+export default async function ExpertsPage({
   params,
   searchParams,
 }: {
@@ -30,17 +30,13 @@ export default async function KnowbotsPage({
   }
   const next = `/${locale}/knowbots${query.size ? `?${query.toString()}` : ''}`
   const session = await requireBrowserSession(locale, next)
-  const t = await getTranslations('knowbots')
   const tAuth = await getTranslations('auth')
-  const tNav = await getTranslations('nav')
 
   return (
-    <div className="bg-background min-h-screen" data-route-class="authenticated-workspace">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <Link href={`/${locale}/dashboard`} className="text-muted-foreground text-sm">
-          {tNav('dashboard')}
-        </Link>
-        <div className="flex items-center gap-4">
+    <ExpertCatalog
+      csrfToken={session.csrf_token}
+      account={
+        <>
           <SignedInAs
             label={tAuth('signedInAs', { name: signedInName(session.user) })}
             email={session.user.email}
@@ -51,13 +47,8 @@ export default async function KnowbotsPage({
             label={tAuth('logout')}
             errorLabel={tAuth('logoutFailed')}
           />
-        </div>
-      </header>
-      <main className="p-8">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground mt-2">{t('intro')}</p>
-        <MyKnowbots csrfToken={session.csrf_token} />
-      </main>
-    </div>
+        </>
+      }
+    />
   )
 }

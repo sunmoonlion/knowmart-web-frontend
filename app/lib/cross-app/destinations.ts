@@ -5,6 +5,9 @@ import { defineDestinations } from '@/lib/cross-app/links'
 // 例：
 //   'info.request': { target: 'knowfeed', segments: ['requests', 'new'], params: ['code'] },
 //   'knowledge.dataset': { target: 'knowbase', segments: ['catalog', ':dataset'] },
-export const destinations = defineDestinations({})
+export const destinations = defineDestinations({
+  // 「去工作台请」：不是从工作台来时，带去工作台主页的「专家」；在那里点「请我的分身」再回来选（SDD 0032）
+  'knowbench.expert': { target: 'knowbench', segments: ['workbench'], params: ['mode'] },
+})
 
 export type DestinationKey = keyof typeof destinations
