@@ -170,6 +170,19 @@
     "realName": "已实名",
     "license": "{name}（编号 {number}）",
     "validUntil": "有效期至 {date}",
-    "longTerm": "长期有效"
+    "longTerm": "长期有效",
+    "needs": "需要你提供的数据",
+    "needRequired": "必填",
+    "needOptional": "可选",
+    "needCount": "{min}～{max} 份",
+    "needCountOne": "{count} 份",
+    "needTable": "要有：{sheet} {columns}",
+    "needsNote": "在 knowbench 请它时，从你自己的本地或云端知识库选这几样；专家只读你选的那几份。",
+    "format": {
+      "pdf": "PDF",
+      "excel": "Excel",
+      "csv": "CSV",
+      "text": "文本"
+    }
   }
 }

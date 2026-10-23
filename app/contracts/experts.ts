@@ -90,6 +90,27 @@ export const expertDetailSchema = z
                 bundled: z.array(
                   z.object({ dataset_id: z.string(), version: z.string() }).strict(),
                 ),
+                // 数据需求声明（SDD 0042）：请它时要你从自己的知识库选的几样
+                needs: z
+                  .array(
+                    z
+                      .object({
+                        key: z.string(),
+                        name: z.string(),
+                        description: z.string(),
+                        formats: z.array(z.string()),
+                        required: z.boolean(),
+                        min_count: z.number().int(),
+                        max_count: z.number().int(),
+                        tables: z.array(
+                          z
+                            .object({ sheet: z.string().nullable(), columns: z.array(z.string()) })
+                            .strict(),
+                        ),
+                      })
+                      .strict(),
+                  )
+                  .default([]),
                 accepts_user_data: z.boolean(),
               })
               .strict(),

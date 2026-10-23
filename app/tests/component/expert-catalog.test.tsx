@@ -83,7 +83,11 @@ const detail: Detail = {
   sections: {
     can_do: [{ label: '解决什么', text: '看清走势与结构' }],
     scope: { does: '', does_not: '估值、评级、买卖建议', elsewhere: '' },
-    data: { bundled: [{ dataset_id: 'ds-600519', version: '3' }], accepts_user_data: false },
+    data: {
+      bundled: [{ dataset_id: 'ds-600519', version: '3' }],
+      needs: [],
+      accepts_user_data: false,
+    },
     delivers: [{ step: '成稿', file: '底稿/成稿.md' }],
     steps: [{ title: '取数', summary: '按口径取数' }],
   },
@@ -209,6 +213,39 @@ describe('专家详情', () => {
     fireEvent.click(screen.getByRole('tab', { name: '版本记录' }))
     fireEvent.click(screen.getByRole('button', { name: '停用' }))
     await waitFor(() => expect(stopKnowbotVersion).toHaveBeenCalledWith(ID, '1', CSRF))
+  })
+
+  it('写了数据需求声明的：列出要你提供的几样，不再列自带的数据（SDD 0042）', async () => {
+    vi.mocked(fetchExpert).mockResolvedValue({
+      ...detail,
+      sections: {
+        ...detail.sections,
+        data: {
+          bundled: [],
+          needs: [
+            {
+              key: 'statements',
+              name: '三张报表',
+              description: '最近三年',
+              formats: ['excel', 'csv'],
+              required: true,
+              min_count: 1,
+              max_count: 3,
+              tables: [{ sheet: '利润表', columns: ['营业收入', '营业成本'] }],
+            },
+          ],
+          accepts_user_data: true,
+        },
+      },
+    })
+    page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+    await screen.findByRole('heading', { name: '财务分析与预测' })
+    fireEvent.click(screen.getByRole('tab', { name: '需要的数据' }))
+    expect(screen.getByText('需要你提供的数据')).toBeInTheDocument()
+    expect(screen.getByText(/必填 · 1～3 份 · Excel \/ CSV/)).toBeInTheDocument()
+    expect(screen.getByText('要有：利润表 营业收入, 营业成本')).toBeInTheDocument()
+    expect(screen.queryByText(messages.experts.bundled)).toBeNull()
+    expect(screen.getByText(messages.experts.acceptsUserData)).toBeInTheDocument()
   })
 
   it('公开专家：有发布主体页签，看不到方法步骤', async () => {

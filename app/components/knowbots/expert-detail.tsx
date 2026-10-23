@@ -232,20 +232,60 @@ function Body({
           </>
         ) : tab === 'data' ? (
           <>
-            <div>
-              <h2 className="mb-2 font-semibold">{t('bundled')}</h2>
-              {sections.data.bundled.length === 0 ? (
-                <p className="text-muted-foreground">{t('noBundled')}</p>
-              ) : (
-                <ul className="space-y-1">
-                  {sections.data.bundled.map((d) => (
-                    <li key={d.dataset_id} className="font-mono text-xs">
-                      {d.dataset_id} · {t('version', { version: d.version })}
+            {sections.data.needs.length ? (
+              <div>
+                <h2 className="mb-2 font-semibold">{t('needs')}</h2>
+                <ul className="space-y-2">
+                  {sections.data.needs.map((need) => (
+                    <li key={need.key}>
+                      <p className="font-medium">
+                        {need.name}{' '}
+                        <span className="text-muted-foreground text-xs font-normal">
+                          {[
+                            t(need.required ? 'needRequired' : 'needOptional'),
+                            need.min_count === need.max_count
+                              ? t('needCountOne', { count: need.min_count })
+                              : t('needCount', { min: need.min_count, max: need.max_count }),
+                            need.formats
+                              .map((format) =>
+                                t.has(`format.${format}`) ? t(`format.${format}`) : format,
+                              )
+                              .join(' / '),
+                          ].join(' · ')}
+                        </span>
+                      </p>
+                      {need.description ? (
+                        <p className="text-muted-foreground">{need.description}</p>
+                      ) : null}
+                      {need.tables.map((table, index) => (
+                        <p key={index} className="text-muted-foreground text-xs">
+                          {t('needTable', {
+                            sheet: table.sheet ?? '',
+                            columns: table.columns.join(', '),
+                          })}
+                        </p>
+                      ))}
                     </li>
                   ))}
                 </ul>
-              )}
-            </div>
+                <p className="text-muted-foreground mt-2 text-xs">{t('needsNote')}</p>
+              </div>
+            ) : (
+              <div>
+                <h2 className="mb-2 font-semibold">{t('bundled')}</h2>
+                {sections.data.bundled.length === 0 ? (
+                  <p className="text-muted-foreground">{t('noBundled')}</p>
+                ) : (
+                  <ul className="space-y-1">
+                    {sections.data.bundled.map((d) => (
+                      <li key={d.dataset_id} className="font-mono text-xs">
+                        {d.dataset_id} · {t('version', { version: d.version })}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             <p>{sections.data.accepts_user_data ? t('acceptsUserData') : t('ownDataOnly')}</p>
           </>
         ) : tab === 'delivers' ? (

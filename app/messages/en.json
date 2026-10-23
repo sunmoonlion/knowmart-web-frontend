@@ -170,6 +170,19 @@
     "realName": "Verified",
     "license": "{name} (No. {number})",
     "validUntil": "Valid until {date}",
-    "longTerm": "No expiry"
+    "longTerm": "No expiry",
+    "needs": "Data you provide",
+    "needRequired": "Required",
+    "needOptional": "Optional",
+    "needCount": "{min} to {max}",
+    "needCountOne": "{count}",
+    "needTable": "Must have: {sheet} {columns}",
+    "needsNote": "When you ask it in knowbench, choose these from your own local or cloud knowledge base; the expert reads only what you choose.",
+    "format": {
+      "pdf": "PDF",
+      "excel": "Excel",
+      "csv": "CSV",
+      "text": "Text"
+    }
   }
 }
