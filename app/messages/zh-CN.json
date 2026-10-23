@@ -184,5 +184,42 @@
       "csv": "CSV",
       "text": "文本"
     }
+  },
+  "market": {
+    "brand": "knowmart",
+    "sections": "栏目",
+    "nav": {
+      "market": "市场",
+      "library": "知识库"
+    }
+  },
+  "library": {
+    "title": "知识库",
+    "lead": "你放在这里准备上架出售的资料。上架时从这里选；卖出时复制一份给买家，这里删了不影响已卖出的。",
+    "pick": "选择要上传的文件",
+    "upload": "上传",
+    "uploading": "正在上传…",
+    "uploaded": "已上传「{name}」",
+    "removed": "已删除「{name}」",
+    "loading": "加载中…",
+    "empty": "还没有资料。",
+    "emptyHint": "只收 PDF、Excel、CSV、文本，单份不超过 50 MB。",
+    "download": "下载「{name}」",
+    "remove": "删除「{name}」",
+    "confirmRemove": "删除「{name}」？已经卖出的不受影响。",
+    "note": "资料存在平台的知识库服务里，只有你自己看得到；上架前按驻场规则审核。",
+    "error": {
+      "inUse": "这份资料正被用着，暂时不能删。",
+      "typeNotAllowed": "只收 PDF、Excel、CSV、文本文件。",
+      "contentMismatch": "文件内容和它的类型对不上。",
+      "notUtf8": "文本文件要用 UTF-8 编码。",
+      "tooLarge": "单个文件不能超过 50 MB。",
+      "quotaExceeded": "空间用完了，先删掉不用的。",
+      "emptyFile": "文件是空的。",
+      "gone": "这份资料已经不在了。",
+      "reauth": "登录过期了，请重新登录。",
+      "unavailable": "知识库暂时不可用，请稍后再试。",
+      "failed": "没有成功，请稍后再试。"
+    }
   }
 }

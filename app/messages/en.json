@@ -184,5 +184,42 @@
       "csv": "CSV",
       "text": "Text"
     }
+  },
+  "market": {
+    "brand": "knowmart",
+    "sections": "Sections",
+    "nav": {
+      "market": "Market",
+      "library": "Knowledge base"
+    }
+  },
+  "library": {
+    "title": "Knowledge base",
+    "lead": "Material you keep here to sell. Choose from it when listing; a sold copy goes to the buyer, and deleting here does not affect what was sold.",
+    "pick": "Choose a file to upload",
+    "upload": "Upload",
+    "uploading": "Uploading…",
+    "uploaded": "Uploaded “{name}”",
+    "removed": "Deleted “{name}”",
+    "loading": "Loading…",
+    "empty": "Nothing here yet.",
+    "emptyHint": "PDF, Excel, CSV and text only; up to 50 MB each.",
+    "download": "Download “{name}”",
+    "remove": "Delete “{name}”",
+    "confirmRemove": "Delete “{name}”? Copies already sold are not affected.",
+    "note": "Your material is kept in the platform's knowledge base service and only you can see it; listings are reviewed under the house rules.",
+    "error": {
+      "inUse": "This item is in use and cannot be deleted right now.",
+      "typeNotAllowed": "PDF, Excel, CSV and text files only.",
+      "contentMismatch": "The file does not match its type.",
+      "notUtf8": "Text files must be UTF-8.",
+      "tooLarge": "A file can be at most 50 MB.",
+      "quotaExceeded": "Your space is used up; delete something first.",
+      "emptyFile": "The file is empty.",
+      "gone": "This item is no longer there.",
+      "reauth": "Your sign-in has expired; sign in again.",
+      "unavailable": "The knowledge base is not available right now; please try again later.",
+      "failed": "That did not work; please try again later."
+    }
   }
 }
