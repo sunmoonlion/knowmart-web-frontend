@@ -7,12 +7,15 @@ import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import { CrossAppLink } from '@/components/common/cross-app-link'
+import { MarketNav } from '@/components/market/market-shell'
+import { Price, Reviews, Stars } from '@/components/market/parts'
 import { Button } from '@/components/ui/button'
 import type { ExpertDetail as Detail } from '@/contracts/experts'
 import { useCrossAppOrigin } from '@/lib/cross-app/use-cross-app'
 import { fetchExpert } from '@/lib/knowbots/catalog'
 import { stopKnowbotVersion, summonReturnUrl } from '@/lib/knowbots/client'
 import { leaveTo } from '@/lib/leave-to'
+import { fetchExpertMarket } from '@/lib/market/client'
 import { cn } from '@/lib/utils'
 
 type Tab = 'canDo' | 'data' | 'delivers' | 'versions' | 'publisher'
@@ -65,6 +68,7 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
         </Link>
         <div className="flex items-center gap-4">{account}</div>
       </header>
+      <MarketNav className="border-b px-6 py-1.5" />
       <main className="mx-auto w-full max-w-5xl flex-1 p-6">
         {expert.isPending ? (
           <p className="text-muted-foreground">{t('loading')}</p>
@@ -110,8 +114,29 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
             stopping={stop.isPending}
           />
         )}
+        {expert.data ? <MarketPart knowbotId={knowbotId} /> : null}
       </main>
     </div>
+  )
+}
+
+// 市场部分（SDD 0018 第十一节）：每次请的价格、评价
+function MarketPart({ knowbotId }: { knowbotId: string }) {
+  const t = useTranslations('marketUi')
+  const market = useQuery({
+    queryKey: ['market', 'expert', knowbotId] as const,
+    queryFn: () => fetchExpertMarket(knowbotId),
+    retry: false,
+  })
+  if (!market.data) return null
+  return (
+    <section className="mt-8 space-y-3 border-t pt-6" aria-label={t('reviews')}>
+      <p className="flex flex-wrap items-center gap-3 text-sm">
+        <Price value={market.data.price} />
+        <Stars rating={market.data.rating} />
+      </p>
+      <Reviews reviews={market.data.reviews} />
+    </section>
   )
 }
 

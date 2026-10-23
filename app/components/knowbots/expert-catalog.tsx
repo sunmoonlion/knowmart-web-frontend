@@ -8,6 +8,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
 
 import { CrossAppLink } from '@/components/common/cross-app-link'
+import { MarketNav } from '@/components/market/market-shell'
 import { Button } from '@/components/ui/button'
 import type { CategoryTree, ExpertItem } from '@/contracts/experts'
 import { useCrossAppOrigin } from '@/lib/cross-app/use-cross-app'
@@ -138,6 +139,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
         </form>
         <div className="flex items-center gap-4">{account}</div>
       </header>
+      <MarketNav className="border-b px-6 py-1.5" />
 
       <div className="flex min-h-0 flex-1">
         {collapsed ? (
