@@ -80,6 +80,8 @@ const detail: Detail = {
   summonable: true,
   updated_at: '2026-10-18T00:00:00Z',
   versions: [{ version: '1', status: 'active', delivered_at: '2026-10-18T00:00:00Z' }],
+  unlisted: [],
+  stop_in: 'here',
   sections: {
     can_do: [{ label: '解决什么', text: '看清走势与结构' }],
     scope: { does: '', does_not: '估值、评级、买卖建议', elsewhere: '' },
@@ -213,6 +215,28 @@ describe('专家详情', () => {
     fireEvent.click(screen.getByRole('tab', { name: '版本记录' }))
     fireEvent.click(screen.getByRole('button', { name: '停用' }))
     await waitFor(() => expect(stopKnowbotVersion).toHaveBeenCalledWith(ID, '1', CSRF))
+  })
+
+  it('knowlab 交来的：空号写明结局，停用到 knowlab 去（SDD 0037）', async () => {
+    vi.mocked(fetchExpert).mockResolvedValue({
+      ...detail,
+      version: '3',
+      versions: [{ version: '3', status: 'active', delivered_at: '2026-10-25T00:00:00Z' }],
+      unlisted: [
+        { version: '2', outcome: 'rejected' },
+        { version: '1', outcome: 'declined' },
+      ],
+      stop_in: 'knowlab',
+    })
+    page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+    fireEvent.click(await screen.findByRole('tab', { name: '版本记录' }))
+    const rows = screen.getAllByRole('listitem').map((li) => li.textContent)
+    expect(rows[0]).toMatch(/^第 3 版/)
+    expect(rows[1]).toBe('第 2 版 · 没有上架：运营审核没通过')
+    expect(rows[2]).toBe('第 1 版 · 没有上架：你没要这一版')
+    // 没配 knowlab 的去处：照说去哪里停，不给停用按钮
+    expect(screen.queryByRole('button', { name: '停用' })).toBeNull()
+    expect(screen.getByText('到 knowlab 的「专家」里停用')).toBeInTheDocument()
   })
 
   it('写了数据需求声明的：列出要你提供的几样，不再列自带的数据（SDD 0042）', async () => {

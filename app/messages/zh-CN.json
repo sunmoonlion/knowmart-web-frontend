@@ -183,7 +183,14 @@
       "excel": "Excel",
       "csv": "CSV",
       "text": "文本"
-    }
+    },
+    "unlisted": {
+      "declined": "没有上架：你没要这一版",
+      "rejected": "没有上架：运营审核没通过",
+      "unknown": "没有上架"
+    },
+    "stopInKnowlab": "到 knowlab 的「专家」里停用",
+    "stopInKnowlabLink": "到 knowlab 停用"
   },
   "market": {
     "brand": "knowmart",

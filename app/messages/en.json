@@ -183,7 +183,14 @@
       "excel": "Excel",
       "csv": "CSV",
       "text": "Text"
-    }
+    },
+    "unlisted": {
+      "declined": "Not listed: you declined this version",
+      "rejected": "Not listed: it did not pass our review",
+      "unknown": "Not listed"
+    },
+    "stopInKnowlab": "Stop it under Experts in knowlab",
+    "stopInKnowlabLink": "Stop in knowlab"
   },
   "market": {
     "brand": "knowmart",

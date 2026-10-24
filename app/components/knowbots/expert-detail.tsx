@@ -140,6 +140,20 @@ function MarketPart({ knowbotId }: { knowbotId: string }) {
   )
 }
 
+type VersionRow =
+  | { kind: 'listed'; v: Detail['versions'][number] }
+  | { kind: 'gap'; version: string; outcome: 'declined' | 'rejected' | null }
+
+/** 上架了的各版与空号合在一起，新的在前。 */
+function versionRows(expert: Detail): VersionRow[] {
+  const rows: VersionRow[] = [
+    ...expert.versions.map((v) => ({ kind: 'listed' as const, v })),
+    ...expert.unlisted.map((g) => ({ kind: 'gap' as const, ...g })),
+  ]
+  const number = (row: VersionRow) => Number(row.kind === 'gap' ? row.version : row.v.version)
+  return rows.sort((a, b) => number(b) - number(a))
+}
+
 function Body({
   expert,
   tab,
@@ -331,29 +345,56 @@ function Body({
           )
         ) : tab === 'versions' ? (
           <ul className="space-y-2">
-            {expert.versions.map((v) => (
-              <li key={v.version} className="flex flex-wrap items-center justify-between gap-3">
-                <span>
-                  {t('version', { version: v.version })}
-                  <span className="text-muted-foreground">
-                    {' · '}
-                    {t(v.status === 'active' ? 'active' : 'stopped')}
-                    {' · '}
-                    {t('deliveredAt', { date: date(v.delivered_at) })}
+            {versionRows(expert).map((row) =>
+              row.kind === 'gap' ? (
+                // 空号：这一版测试通过了但没上架（SDD 0037 第三节）
+                <li key={row.version} className="text-muted-foreground">
+                  {t('version', { version: row.version })}
+                  {' · '}
+                  {row.outcome ? t(`unlisted.${row.outcome}`) : t('unlisted.unknown')}
+                </li>
+              ) : (
+                <li
+                  key={row.v.version}
+                  className="flex flex-wrap items-center justify-between gap-3"
+                >
+                  <span>
+                    {t('version', { version: row.v.version })}
+                    <span className="text-muted-foreground">
+                      {' · '}
+                      {t(row.v.status === 'active' ? 'active' : 'stopped')}
+                      {' · '}
+                      {t('deliveredAt', { date: date(row.v.delivered_at) })}
+                    </span>
                   </span>
-                </span>
-                {expert.owned && v.status === 'active' ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={stopping}
-                    onClick={() => onStop(v.version)}
-                  >
-                    {t('stop')}
-                  </Button>
-                ) : null}
-              </li>
-            ))}
+                  {expert.owned && row.v.status === 'active' ? (
+                    expert.stop_in === 'knowlab' ? (
+                      // knowlab 交来的到 knowlab 停：专家的一生记在那边，两边才对得上
+                      <CrossAppLink
+                        to="knowlab.experts"
+                        className="text-primary text-sm underline-offset-4 hover:underline"
+                        fallback={
+                          <span className="text-muted-foreground text-xs">
+                            {t('stopInKnowlab')}
+                          </span>
+                        }
+                      >
+                        {t('stopInKnowlabLink')}
+                      </CrossAppLink>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={stopping}
+                        onClick={() => onStop(row.v.version)}
+                      >
+                        {t('stop')}
+                      </Button>
+                    )
+                  ) : null}
+                </li>
+              ),
+            )}
           </ul>
         ) : expert.publisher ? (
           <div className="space-y-2">

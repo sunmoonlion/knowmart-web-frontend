@@ -79,6 +79,20 @@ export const expertDetailSchema = z
             })
             .strict(),
         ),
+        // 空号（SDD 0037 第三节）：knowlab 测试通过、没上架的那几版；结局只给主人（用户没要 /
+        // 运营审核没过），还没定的、别人看的是 null
+        unlisted: z
+          .array(
+            z
+              .object({
+                version: z.string().regex(/^[1-9][0-9]{0,5}$/),
+                outcome: z.enum(['declined', 'rejected']).nullable(),
+              })
+              .strict(),
+          )
+          .default([]),
+        // 停用在哪儿做：knowlab 交来的到 knowlab 停（专家的一生记在 knowlab）
+        stop_in: z.enum(['here', 'knowlab']).default('here'),
         sections: z
           .object({
             can_do: z.array(labelled),
