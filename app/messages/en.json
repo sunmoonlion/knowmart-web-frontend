@@ -467,6 +467,7 @@
       "demand_state": "This demand cannot be changed now.",
       "response_state": "This response cannot be withdrawn now.",
       "id_number_taken": "This ID number is used by another account.",
+      "publisher_unconfigured": "Registering is not available right now; please try again later.",
       "document_type_invalid": "JPEG, PNG or PDF only.",
       "document_too_large": "Up to 5 MB each.",
       "license_not_needed": "This category needs no license.",

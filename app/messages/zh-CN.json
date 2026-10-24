@@ -467,6 +467,7 @@
       "demand_state": "这条需求现在不能这样做。",
       "response_state": "这条响应现在不能撤。",
       "id_number_taken": "这个身份证号已被别的账号用了。",
+      "publisher_unconfigured": "入驻暂时不可用，请稍后再试。",
       "document_type_invalid": "只收 JPEG、PNG 或 PDF。",
       "document_too_large": "一张不超过 5 MB。",
       "license_not_needed": "这个类目不用证照。",
