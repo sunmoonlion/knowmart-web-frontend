@@ -455,6 +455,7 @@
       "license_required": "这个类目要证照，先传证照并等审过。",
       "category_invalid": "先选一个类目。",
       "own_listing": "这是你自己的条目。",
+      "listing_unavailable": "这条现在买不了。",
       "own_demand": "这是你自己的需求。",
       "demand_closed": "这条需求不再收响应。",
       "already_responded": "你已经响应过这条需求。",

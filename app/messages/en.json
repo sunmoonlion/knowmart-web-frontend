@@ -455,6 +455,7 @@
       "license_required": "This category needs an approved license.",
       "category_invalid": "Choose a category.",
       "own_listing": "This listing is yours.",
+      "listing_unavailable": "This listing cannot be bought right now.",
       "own_demand": "This demand is yours.",
       "demand_closed": "This demand no longer takes responses.",
       "already_responded": "You already responded to this demand.",
