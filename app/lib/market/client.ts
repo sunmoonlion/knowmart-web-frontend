@@ -163,7 +163,7 @@ export const delistListing = (csrfToken: string, id: string) =>
 export const buyListing = (
   csrfToken: string,
   id: string,
-  body: { target_app: 'knowbench' | 'knowlab'; demand_id?: string },
+  body: { request_id: string; target_app: 'knowbench' | 'knowlab'; demand_id?: string },
 ) => send(z.object({ trade: tradeSchema }).loose(), `/knowledge/${seg(id)}/buy`, csrfToken, body)
 
 // ---------- 需求与响应 ----------

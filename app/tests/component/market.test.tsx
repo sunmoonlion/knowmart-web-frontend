@@ -95,12 +95,18 @@ describe('供需市场', () => {
     expect(screen.getByText('¥50.00')).toBeInTheDocument()
     expect(screen.getByText(/发布主体：张三工作室/)).toBeInTheDocument()
     fireEvent.click(screen.getByLabelText('knowlab 知识库'))
+    vi.mocked(client.buyListing).mockRejectedValueOnce(new Error('网断了'))
     fireEvent.click(screen.getByRole('button', { name: '买下这份' }))
+    await waitFor(() => expect(client.buyListing).toHaveBeenCalledTimes(1))
+    fireEvent.click(await screen.findByRole('button', { name: '买下这份' }))
     expect(await screen.findByText('买好了，已复制进你的 knowlab 知识库。')).toBeInTheDocument()
-    expect(client.buyListing).toHaveBeenCalledWith(CSRF, 'l1', {
-      target_app: 'knowlab',
-      demand_id: 'd1',
-    })
+    const [first, second] = vi.mocked(client.buyListing).mock.calls
+    expect(second).toEqual([
+      CSRF,
+      'l1',
+      { request_id: expect.any(String), target_app: 'knowlab', demand_id: 'd1' },
+    ])
+    expect(first![2].request_id).toBe(second![2].request_id) // 重试沿用同一个键
   })
 
   it('需求：卖家响应；需求方选一家', async () => {

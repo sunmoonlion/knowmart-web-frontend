@@ -129,9 +129,12 @@ export function KnowledgeDetail({
     queryFn: () => fetchListing(listingId),
   })
   const [target, setTarget] = useState<'knowbench' | 'knowlab'>('knowbench')
+  // 这一次购买的幂等键：没成功再点沿用它，后端接着做原来那一笔；改了买进哪里就换一个
+  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
   const buy = useMutation({
     mutationFn: () =>
       buyListing(csrfToken, listingId, {
+        request_id: requestId,
         target_app: target,
         ...(demandId ? { demand_id: demandId } : {}),
       }),
@@ -207,7 +210,10 @@ export function KnowledgeDetail({
                         type="radio"
                         name="target"
                         checked={target === place}
-                        onChange={() => setTarget(place)}
+                        onChange={() => {
+                          setTarget(place)
+                          setRequestId(crypto.randomUUID())
+                        }}
                       />
                       {t(`place.${place}`)}
                     </label>
