@@ -210,6 +210,18 @@ export const chooseResponse = (csrfToken: string, demandId: string, responseId: 
 export const fetchMyResponses = () => get(itemsOf(responseSchema), '/responses/mine')
 export const withdrawResponse = (csrfToken: string, id: string) =>
   send(z.object({ response: responseSchema }).loose(), `/responses/${seg(id)}/withdraw`, csrfToken)
+// 被选中的卖家补附条目（Fable 评审 P2-9）
+export const attachOffer = (
+  csrfToken: string,
+  id: string,
+  body: { listing_kind: 'knowledge' | 'expert'; listing_ref: string },
+) =>
+  send(
+    z.object({ response: responseSchema }).loose(),
+    `/responses/${seg(id)}/offer`,
+    csrfToken,
+    body,
+  )
 
 // ---------- 成交、评价 ----------
 export const fetchTrades = (role: 'buyer' | 'seller') =>

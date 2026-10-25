@@ -281,6 +281,8 @@
     "attachKnowledge": "附上你已上架的知识条目编号（可不附）",
     "attachExpert": "附上你的专家「编号@版本」（可不附）",
     "attachHint": "要新做的先别附，做好上架后再告诉买家",
+    "attachLater": "做好上架了，把条目编号（专家写「编号@版本」）填在这里，买家照它买或请",
+    "attachOffer": "补附条目",
     "offerPrice": "报价（元，可空）",
     "offerDays": "多久做好（天，可空）",
     "sendResponse": "交上响应",

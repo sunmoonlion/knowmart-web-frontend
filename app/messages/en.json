@@ -281,6 +281,8 @@
     "attachKnowledge": "Attach your listed knowledge id (optional)",
     "attachExpert": "Attach your expert “id@version” (optional)",
     "attachHint": "If it is not made yet, leave this empty and tell the buyer once it is listed",
+    "attachLater": "Once it is listed, put its id here (for an expert, “id@version”); the buyer buys or asks it from here",
+    "attachOffer": "Attach the listing",
     "offerPrice": "Price (¥, optional)",
     "offerDays": "Days to deliver (optional)",
     "sendResponse": "Send response",

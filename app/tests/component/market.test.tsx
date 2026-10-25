@@ -175,6 +175,42 @@ describe('供需市场', () => {
     await waitFor(() => expect(client.chooseResponse).toHaveBeenCalledWith(CSRF, 'd1', 'r1'))
   })
 
+  it('需求选中了我、我当初没附条目：做好上架后补附（Fable 评审 P2-9）', async () => {
+    const response = {
+      response_id: 'r1',
+      demand_id: 'd1',
+      listing_kind: null,
+      listing_ref: null,
+      proposal: '我来整理',
+      price: null,
+      days: null,
+      status: 'chosen' as const,
+      mine: true,
+      to_me: false,
+      created_at: null,
+    }
+    vi.mocked(client.fetchDemand).mockResolvedValue(
+      demand({
+        status: 'chosen',
+        taking_responses: false,
+        response_count: 1,
+        responses: [response],
+      }),
+    )
+    vi.mocked(client.attachOffer).mockResolvedValue({} as never)
+    page(<DemandScreen csrfToken={CSRF} account={null} demandId="d1" />)
+    fireEvent.change(await screen.findByLabelText(/附上你已上架的知识条目编号/), {
+      target: { value: 'l9' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '补附条目' }))
+    await waitFor(() =>
+      expect(client.attachOffer).toHaveBeenCalledWith(CSRF, 'r1', {
+        listing_kind: 'knowledge',
+        listing_ref: 'l9',
+      }),
+    )
+  })
+
   it('入驻：个人填实名，交审核', async () => {
     vi.mocked(client.fetchMyPublisher).mockResolvedValue({
       publisher: null,

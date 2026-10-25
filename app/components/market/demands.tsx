@@ -17,6 +17,7 @@ import {
   postMessage,
   respond,
   withdrawResponse,
+  attachOffer,
   type DemandForm,
 } from '@/lib/market/client'
 
@@ -255,7 +256,7 @@ export function DemandScreen({ csrfToken, account, demandId }: Props & { demandI
                 </p>
               ) : null}
             </section>
-            {d.mine && d.status === 'open' ? (
+            {d.mine && (d.status === 'open' || d.status === 'chosen') ? (
               <Button
                 size="sm"
                 variant="outline"
@@ -319,6 +320,16 @@ function ResponseCard({
     mutationFn: () => withdrawResponse(csrfToken, response.response_id),
     onSuccess: onChanged,
   })
+  // 选中了、当初没附条目：做好上架再补附（Fable 评审 P2-9）
+  const [ref, setRef] = useState('')
+  const attach = useMutation({
+    mutationFn: () =>
+      attachOffer(csrfToken, response.response_id, {
+        listing_kind: demand.kind,
+        listing_ref: ref.trim(),
+      }),
+    onSuccess: onChanged,
+  })
   const offered =
     response.listing_kind === 'knowledge' && response.listing_ref
       ? `/${locale}/knowledge/${response.listing_ref}${response.status === 'chosen' && demand.mine ? `?demand=${demand.demand_id}` : ''}`
@@ -346,6 +357,29 @@ function ResponseCard({
             ? t('buyChosen')
             : t('seeOffer')}
         </Link>
+      ) : null}
+      {response.mine && response.status === 'chosen' && !response.listing_ref ? (
+        <div className="flex flex-wrap items-end gap-2">
+          <Field
+            label={demand.kind === 'knowledge' ? t('attachKnowledge') : t('attachExpert')}
+            hint={t('attachLater')}
+          >
+            <input
+              className={inputClass}
+              maxLength={128}
+              value={ref}
+              onChange={(e) => setRef(e.target.value)}
+            />
+          </Field>
+          <Button
+            size="sm"
+            disabled={!ref.trim() || attach.isPending}
+            onClick={() => attach.mutate()}
+          >
+            {t('attachOffer')}
+          </Button>
+          <Problem error={attach.error} />
+        </div>
       ) : null}
       <div className="flex gap-2">
         {demand.mine && demand.status === 'open' && response.status === 'open' ? (
