@@ -21,7 +21,7 @@ import { Badge, Field, inputClass, Problem } from './parts'
 
 type Props = { csrfToken: string; account: React.ReactNode }
 const KEY = ['market', 'publisher'] as const
-const STATUS_TONE = { pending: 'warn', approved: 'ok', rejected: 'bad' } as const
+const STATUS_TONE = { pending: 'warn', approved: 'ok', rejected: 'bad', revoked: 'bad' } as const
 
 // 发布主体与资质（SDD 0018 第十一节第 5 小节）：个人实名或营业执照；照片只给运营审核看，审过后留一年；
 // 公开专家、上架知识都要先审过，要证照的类目还要证照

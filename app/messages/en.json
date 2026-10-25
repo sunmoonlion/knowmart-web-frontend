@@ -337,7 +337,8 @@
     "reviewStatus": {
       "pending": "In review",
       "approved": "Approved",
-      "rejected": "Not approved"
+      "rejected": "Not approved",
+      "revoked": "Revoked (see the note; edit and submit again to be reviewed)"
     },
     "documentKind": {
       "id_front": "ID card, photo side",

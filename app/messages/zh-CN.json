@@ -337,7 +337,8 @@
     "reviewStatus": {
       "pending": "等审核",
       "approved": "已审过",
-      "rejected": "没过"
+      "rejected": "没过",
+      "revoked": "已撤销（理由见下；改资料可重新审）"
     },
     "documentKind": {
       "id_front": "身份证人像面",
