@@ -118,7 +118,7 @@ export const fetchMyExperts = () =>
 export const setExpertListing = (
   csrfToken: string,
   knowbotId: string,
-  body: { visibility: 'private' | 'public'; price: string | null },
+  body: { visibility: 'private' | 'public'; price: string | null; category?: string },
 ) =>
   send(
     z.object({ listing: expertListingSchema }).loose(),

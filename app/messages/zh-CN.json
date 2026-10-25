@@ -402,7 +402,8 @@
       "pricePerAsk": "每次请（元，空着免费）",
       "keepPrivate": "只自用",
       "updatePrice": "改价格",
-      "askPublic": "申请公开"
+      "askPublic": "申请公开",
+      "chooseCategory": "申请公开前先选类目"
     },
     "bought": {
       "title": "我买到的",

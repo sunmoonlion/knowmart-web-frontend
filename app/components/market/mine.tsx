@@ -327,9 +327,20 @@ function MyExperts({ csrfToken }: { csrfToken: string }) {
   const client = useQueryClient()
   const experts = useQuery({ queryKey: ['market', 'my-experts'] as const, queryFn: fetchMyExperts })
   const [prices, setPrices] = useState<Record<string, string>>({})
+  // 申请公开要选类目；knowlab 交来的起初没有类目（Fable 评审 P2-1）
+  const [categories, setCategories] = useState<Record<string, string>>({})
   const save = useMutation({
-    mutationFn: (input: { id: string; visibility: 'private' | 'public'; price: string | null }) =>
-      setExpertListing(csrfToken, input.id, { visibility: input.visibility, price: input.price }),
+    mutationFn: (input: {
+      id: string
+      visibility: 'private' | 'public'
+      price: string | null
+      category?: string
+    }) =>
+      setExpertListing(csrfToken, input.id, {
+        visibility: input.visibility,
+        price: input.price,
+        ...(input.category ? { category: input.category } : {}),
+      }),
     onSuccess: () => client.invalidateQueries({ queryKey: ['market', 'my-experts'] }),
   })
   return (
@@ -339,6 +350,9 @@ function MyExperts({ csrfToken }: { csrfToken: string }) {
       <ul className="divide-y rounded-xl border" aria-label={t('mine.experts')}>
         {(experts.data?.items ?? []).map((bot) => {
           const price = prices[bot.knowbot_id] ?? bot.price ?? ''
+          const category =
+            categories[bot.knowbot_id] ??
+            (bot.category.code === 'uncategorized' ? '' : bot.category.code)
           return (
             <li key={bot.knowbot_id} className="space-y-2 px-4 py-3 text-sm">
               <p className="flex flex-wrap items-center gap-2">
@@ -372,11 +386,32 @@ function MyExperts({ csrfToken }: { csrfToken: string }) {
                 >
                   {t('mine.keepPrivate')}
                 </Button>
+                <Field label={t('category')}>
+                  <select
+                    className={inputClass}
+                    value={category}
+                    onChange={(e) =>
+                      setCategories({ ...categories, [bot.knowbot_id]: e.target.value })
+                    }
+                  >
+                    <option value="">{t('mine.chooseCategory')}</option>
+                    {MARKET_CATEGORIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.group} · {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
                 <Button
                   size="sm"
-                  disabled={save.isPending || bot.listing_status === 'taken_down'}
+                  disabled={save.isPending || bot.listing_status === 'taken_down' || !category}
                   onClick={() =>
-                    save.mutate({ id: bot.knowbot_id, visibility: 'public', price: price || null })
+                    save.mutate({
+                      id: bot.knowbot_id,
+                      visibility: 'public',
+                      price: price || null,
+                      category,
+                    })
                   }
                 >
                   {bot.visibility === 'public' ? t('mine.updatePrice') : t('mine.askPublic')}

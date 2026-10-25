@@ -402,7 +402,8 @@
       "pricePerAsk": "Per ask (¥, empty is free)",
       "keepPrivate": "Keep for myself",
       "updatePrice": "Update price",
-      "askPublic": "Request public"
+      "askPublic": "Request public",
+      "chooseCategory": "Choose a category before requesting public"
     },
     "bought": {
       "title": "My purchases",

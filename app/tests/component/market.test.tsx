@@ -227,6 +227,38 @@ describe('供需市场', () => {
       expect(client.setExpertListing).toHaveBeenCalledWith(CSRF, 'k1', {
         visibility: 'public',
         price: '9.9',
+        category: 'tools.office',
+      }),
+    )
+  })
+
+  it('我发布的：没有类目的专家先选类目才能申请公开（Fable 评审 P2-1）', async () => {
+    vi.mocked(client.fetchMyListings).mockResolvedValue({ items: [] })
+    vi.mocked(client.fetchMyExperts).mockResolvedValue({
+      items: [
+        {
+          knowbot_id: 'k2',
+          name: '财务分析与预测',
+          visibility: 'private',
+          listing_status: 'self',
+          price: null,
+          review_note: null,
+          category: { code: 'uncategorized', name: '未分类' },
+        },
+      ],
+    })
+    vi.mocked(client.setExpertListing).mockResolvedValue({} as never)
+    page(<MyPublished csrfToken={CSRF} account={null} />)
+    fireEvent.click(screen.getByRole('tab', { name: '专家' }))
+    const ask = await screen.findByRole('button', { name: '申请公开' })
+    expect(ask).toBeDisabled()
+    fireEvent.change(screen.getByLabelText('类目'), { target: { value: 'tools.lookup' } })
+    fireEvent.click(ask)
+    await waitFor(() =>
+      expect(client.setExpertListing).toHaveBeenCalledWith(CSRF, 'k2', {
+        visibility: 'public',
+        price: null,
+        category: 'tools.lookup',
       }),
     )
   })
