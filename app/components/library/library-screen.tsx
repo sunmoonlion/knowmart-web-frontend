@@ -22,6 +22,7 @@ const MAX_BYTES = 50 * 1024 * 1024
 // knowbase 回的 code → 页面上的说法；没列的一律「没有成功」
 const SAID: Record<string, string> = {
   in_use: 'inUse',
+  item_listed: 'listed',
   type_not_allowed: 'typeNotAllowed',
   content_mismatch: 'contentMismatch',
   not_utf8: 'notUtf8',

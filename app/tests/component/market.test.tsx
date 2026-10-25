@@ -109,6 +109,28 @@ describe('供需市场', () => {
     expect(first![2].request_id).toBe(second![2].request_id) // 重试沿用同一个键
   })
 
+  it('卖家那份没了：照说没买成，不说买好了', async () => {
+    vi.mocked(client.fetchListing).mockResolvedValue(LISTING)
+    vi.mocked(client.buyListing).mockResolvedValue({
+      trade: {
+        trade_id: 't1',
+        kind: 'knowledge',
+        listing_ref: 'l1',
+        title: LISTING.title,
+        price: '50.00',
+        target_app: 'knowbench',
+        copied: [],
+        demand_id: null,
+        status: 'failed',
+        created_at: null,
+      },
+    })
+    page(<KnowledgeDetail csrfToken={CSRF} account={null} listingId="l1" demandId={null} />)
+    fireEvent.click(await screen.findByRole('button', { name: '买下这份' }))
+    expect(await screen.findByText(/没买成：卖家那份资料已经不在了/)).toBeInTheDocument()
+    expect(screen.queryByText(/买好了/)).toBeNull()
+  })
+
   it('需求：卖家响应；需求方选一家', async () => {
     vi.mocked(client.fetchDemand).mockResolvedValue(demand())
     vi.mocked(client.respond).mockResolvedValue({} as never)

@@ -193,9 +193,14 @@ export function KnowledgeDetail({
               <p className="text-muted-foreground text-sm">{t('knowledge.yours')}</p>
             ) : buy.isSuccess ? (
               <p role="status" className="rounded-lg border px-3 py-2 text-sm">
-                {t('knowledge.bought', {
-                  place: t(`place.${buy.data.trade.target_app ?? 'knowbench'}`),
-                })}
+                {t(
+                  buy.data.trade.status === 'failed'
+                    ? 'knowledge.boughtFailed'
+                    : 'knowledge.bought',
+                  {
+                    place: t(`place.${buy.data.trade.target_app ?? 'knowbench'}`),
+                  },
+                )}
               </p>
             ) : (
               <section className="space-y-3 rounded-xl border p-4 text-sm">

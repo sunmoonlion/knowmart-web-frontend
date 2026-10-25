@@ -488,6 +488,9 @@ export function MyTrades({ csrfToken, account }: Props) {
                       {t('bought.into', { place: t(`place.${trade.target_app}`) })}
                     </span>
                   ) : null}
+                  {trade.status === 'failed' ? (
+                    <span className="text-destructive text-xs">{t('bought.failed')}</span>
+                  ) : null}
                 </p>
                 {trade.review ? (
                   <div className="text-muted-foreground">

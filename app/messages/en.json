@@ -223,6 +223,7 @@
     "note": "Your material is kept in the platform's knowledge base service and only you can see it; listings are reviewed under the house rules.",
     "error": {
       "inUse": "This item is in use and cannot be deleted right now.",
+      "listed": "This item is still in a listing under review or on sale; delist it under “My listings” first.",
       "typeNotAllowed": "PDF, Excel, CSV and text files only.",
       "contentMismatch": "The file does not match its type.",
       "notUtf8": "Text files must be UTF-8.",
@@ -355,6 +356,7 @@
       "resaleNotAllowed": "No resale.",
       "yours": "This listing is yours.",
       "bought": "Bought; a copy is in your {place}.",
+      "boughtFailed": "Not bought: the seller's copy is no longer there. Anything already copied stays in your {place}.",
       "buy": "Buy",
       "into": "Copy into",
       "noPayment": "This period only records trades; nothing is charged.",
@@ -408,6 +410,7 @@
       "seller": "Sold",
       "empty": "No trades yet.",
       "into": "Into {place}",
+      "failed": "Not bought: the seller's copy is no longer there",
       "review": "Review",
       "rating": "Rating",
       "words": "A few words",

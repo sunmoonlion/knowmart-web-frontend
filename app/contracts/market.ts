@@ -166,6 +166,7 @@ export const tradeSchema = z
       z.object({ name: z.string().nullable(), item_id: z.string().nullable() }).loose(),
     ),
     demand_id: z.string().nullable(),
+    status: z.enum(['copying', 'done', 'failed']).optional(),
     created_at: z.string().nullable(),
     role: z.enum(['buyer', 'seller']).optional(),
     review: reviewSchema.nullable().optional(),
