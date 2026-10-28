@@ -88,6 +88,8 @@ const detail: Detail = {
     data: {
       bundled: [{ dataset_id: 'ds-600519', version: '3' }],
       needs: [],
+      asks_by_question: false,
+      bound_count: 0,
       accepts_user_data: false,
     },
     delivers: [{ step: '成稿', file: '底稿/成稿.md' }],
@@ -239,6 +241,29 @@ describe('专家详情', () => {
     expect(screen.getByText('到 knowlab 的「专家」里停用')).toBeInTheDocument()
   })
 
+  it('清单 v2 的专家：说明按你的问题定数据，自带的只说有几份（decisions ⑭）', async () => {
+    vi.mocked(fetchExpert).mockResolvedValue({
+      ...detail,
+      sections: {
+        ...detail.sections,
+        data: {
+          bundled: [],
+          needs: [],
+          asks_by_question: true,
+          bound_count: 2,
+          accepts_user_data: true,
+        },
+      },
+    })
+    page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+    await screen.findByRole('heading', { name: '财务分析与预测' })
+    fireEvent.click(screen.getByRole('tab', { name: '需要的数据' }))
+    expect(screen.getByText(messages.experts.byQuestion)).toBeInTheDocument()
+    expect(
+      screen.getByText('专家自带 2 份（作者挑选的，看不到内容，也不能下载）。'),
+    ).toBeInTheDocument()
+  })
+
   it('写了数据需求声明的：列出要你提供的几样，不再列自带的数据（SDD 0042）', async () => {
     vi.mocked(fetchExpert).mockResolvedValue({
       ...detail,
@@ -258,6 +283,8 @@ describe('专家详情', () => {
               tables: [{ sheet: '利润表', columns: ['营业收入', '营业成本'] }],
             },
           ],
+          asks_by_question: false,
+          bound_count: 0,
           accepts_user_data: true,
         },
       },

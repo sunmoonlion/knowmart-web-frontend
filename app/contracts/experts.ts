@@ -125,6 +125,10 @@ export const expertDetailSchema = z
                       .strict(),
                   )
                   .default([]),
+                // 清单 v2（decisions ⑭）：每件委托按你的问题提出要哪些数据、你确认；
+                // 作者挑选的数据只说有几份
+                asks_by_question: z.boolean().default(false),
+                bound_count: z.number().int().default(0),
                 accepts_user_data: z.boolean(),
               })
               .strict(),

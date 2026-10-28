@@ -309,6 +309,17 @@ function Body({
                 </ul>
                 <p className="text-muted-foreground mt-2 text-xs">{t('needsNote')}</p>
               </div>
+            ) : sections.data.asks_by_question ? (
+              <div className="space-y-2">
+                <h2 className="font-semibold">{t('byQuestion')}</h2>
+                <p className="text-muted-foreground">{t('byQuestionNote')}</p>
+                <h2 className="font-semibold">{t('bundled')}</h2>
+                <p className="text-muted-foreground">
+                  {sections.data.bound_count
+                    ? t('boundCount', { count: sections.data.bound_count })
+                    : t('noBundled')}
+                </p>
+              </div>
             ) : (
               <div>
                 <h2 className="mb-2 font-semibold">{t('bundled')}</h2>
