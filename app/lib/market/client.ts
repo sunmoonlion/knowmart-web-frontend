@@ -12,6 +12,7 @@ import {
   itemsOf,
   licenseSchema,
   listingSchema,
+  materialSchema,
   messageSchema,
   myPublisherSchema,
   pageOf,
@@ -144,6 +145,7 @@ export type ListingForm = {
 export const fetchKnowledge = (params: { q?: string; category?: string | null; page?: number }) =>
   get(pageOf(listingSchema), `/knowledge${query(params)}`)
 export const fetchMyListings = () => get(itemsOf(listingSchema), '/knowledge/mine')
+export const fetchMyMaterials = () => get(itemsOf(materialSchema), '/knowledge/materials')
 export const fetchListing = async (id: string) =>
   (await get(z.object({ listing: listingSchema }).loose(), `/knowledge/${seg(id)}`)).listing
 export const createListing = (csrfToken: string, body: ListingForm) =>
@@ -163,7 +165,7 @@ export const delistListing = (csrfToken: string, id: string) =>
 export const buyListing = (
   csrfToken: string,
   id: string,
-  body: { request_id: string; target_app: 'knowbench' | 'knowlab'; demand_id?: string },
+  body: { request_id: string; demand_id?: string },
 ) => send(z.object({ trade: tradeSchema }).loose(), `/knowledge/${seg(id)}/buy`, csrfToken, body)
 
 // ---------- 需求与响应 ----------

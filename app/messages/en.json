@@ -174,19 +174,6 @@
     "license": "{name} (No. {number})",
     "validUntil": "Valid until {date}",
     "longTerm": "No expiry",
-    "needs": "Data you provide",
-    "needRequired": "Required",
-    "needOptional": "Optional",
-    "needCount": "{min} to {max}",
-    "needCountOne": "{count}",
-    "needTable": "Must have: {sheet} {columns}",
-    "needsNote": "When you ask it in knowbench, choose these from your own local or cloud knowledge base; the expert reads only what you choose.",
-    "format": {
-      "pdf": "PDF",
-      "excel": "Excel",
-      "csv": "CSV",
-      "text": "Text"
-    },
     "unlisted": {
       "declined": "Not listed: you declined this version",
       "rejected": "Not listed: it did not pass our review",
@@ -204,39 +191,8 @@
       "demands": "Demands",
       "mine": "My listings",
       "bought": "Purchases",
-      "library": "Knowledge base",
       "publisher": "Publisher",
       "rules": "House rules"
-    }
-  },
-  "library": {
-    "title": "Knowledge base",
-    "lead": "Material you keep here to sell. Choose from it when listing; a sold copy goes to the buyer, and deleting here does not affect what was sold.",
-    "pick": "Choose a file to upload",
-    "upload": "Upload",
-    "uploading": "Uploading…",
-    "uploaded": "Uploaded “{name}”",
-    "removed": "Deleted “{name}”",
-    "loading": "Loading…",
-    "empty": "Nothing here yet.",
-    "emptyHint": "PDF, Excel, CSV and text only; up to 50 MB each.",
-    "download": "Download “{name}”",
-    "remove": "Delete “{name}”",
-    "confirmRemove": "Delete “{name}”? Copies already sold are not affected.",
-    "note": "Your material is kept in the platform's knowledge base service and only you can see it; listings are reviewed under the house rules.",
-    "error": {
-      "inUse": "This item is in use and cannot be deleted right now.",
-      "listed": "This item is still in a listing under review or on sale; delist it under “My listings” first.",
-      "typeNotAllowed": "PDF, Excel, CSV and text files only.",
-      "contentMismatch": "The file does not match its type.",
-      "notUtf8": "Text files must be UTF-8.",
-      "tooLarge": "A file can be at most 50 MB.",
-      "quotaExceeded": "Your space is used up; delete something first.",
-      "emptyFile": "The file is empty.",
-      "gone": "This item is no longer there.",
-      "reauth": "Your sign-in has expired; sign in again.",
-      "unavailable": "The knowledge base is not available right now; please try again later.",
-      "failed": "That did not work; please try again later."
     }
   },
   "marketUi": {
@@ -353,7 +309,7 @@
     },
     "knowledge": {
       "title": "Knowledge",
-      "lead": "Material sellers offer. A copy goes into your knowbench cloud knowledge base or knowlab knowledge base; it is yours and you can download it.",
+      "lead": "Material sellers offer. Once bought, knowbase gives you the right to use it; it shows under “Purchased” in your knowbase library and you can download it.",
       "empty": "Nothing is listed yet.",
       "description": "What is in it",
       "sample": "Sample",
@@ -361,12 +317,13 @@
       "resaleAllowed": "The seller allows resale.",
       "resaleNotAllowed": "No resale.",
       "yours": "This listing is yours.",
-      "bought": "Bought; a copy is in your {place}.",
-      "boughtFailed": "Not bought: the seller's copy is no longer there. Anything already copied stays in your {place}.",
+      "bought": "Bought; it is under “Purchased” in your knowbase library.",
+      "boughtFailed": "Not bought: the seller's file is no longer there. Anything already granted stays under “Purchased”.",
       "buy": "Buy",
-      "into": "Copy into",
       "noPayment": "This period only records trades; nothing is charged.",
-      "buyNow": "Buy this"
+      "buyNow": "Buy this",
+      "boughtNotForSale": "Not bought: the seller no longer sells this file. Anything already granted stays under “Purchased”.",
+      "where": "It goes under “Purchased” in your knowbase library; to use it in knowbench or knowlab, show it to that app in knowbase first."
     },
     "demands": {
       "title": "Demand hall",
@@ -390,15 +347,15 @@
       "experts": "Experts",
       "demands": "Demands",
       "responses": "Responses",
-      "knowledgeLead": "Write listings from material in your knowmart knowledge base; operators review them before they go up.",
+      "knowledgeLead": "Write listings from material you handed to knowmart in knowbase; operators review them before they go up.",
       "newListing": "New listing",
       "submit": "Submit for review",
       "delist": "Delist",
       "listingForm": "Knowledge listing",
       "listingTitle": "Name",
       "descriptionHint": "How many files, which formats, what they cover",
-      "files": "Material (from your knowledge base)",
-      "noFiles": "Your knowledge base is empty; upload in “Knowledge base” first.",
+      "files": "Material (handed to knowmart in knowbase)",
+      "noFiles": "Nothing handed to knowmart yet. In your knowbase library, hand the material you want to sell to knowmart first.",
       "sampleHint": "A few pages or lines buyers can see before buying",
       "rightsHint": "Confirm you have the right to sell this material",
       "resale": "Allow buyers to resell",
@@ -409,7 +366,10 @@
       "keepPrivate": "Keep for myself",
       "updatePrice": "Update price",
       "askPublic": "Request public",
-      "chooseCategory": "Choose a category before requesting public"
+      "chooseCategory": "Choose a category before requesting public",
+      "filesHint": "You can sell material you uploaded yourself and licensed “for sale” in knowbase.",
+      "notForSale": "(not licensed for sale; change it in knowbase)",
+      "notYours": "(not uploaded by you; cannot be sold)"
     },
     "bought": {
       "title": "My purchases",
@@ -423,7 +383,8 @@
       "words": "A few words",
       "sendReview": "Review",
       "reply": "Reply to the review",
-      "sendReply": "Reply"
+      "sendReply": "Reply",
+      "notForSale": "Not bought: the seller no longer sells this file"
     },
     "publisher": {
       "title": "Publisher and licenses",
@@ -481,9 +442,8 @@
       "document_type_invalid": "JPEG, PNG or PDF only.",
       "document_too_large": "Up to 5 MB each.",
       "license_not_needed": "This category needs no license.",
-      "item_not_found": "A file is no longer in your knowledge base.",
+      "item_not_found": "A file is no longer among the material you handed to knowmart.",
       "item_gone": "The seller's file is no longer there.",
-      "buyer_quota_exceeded": "Your knowledge base has no room left.",
       "knowbase_unconfigured": "The knowledge base is not available right now.",
       "reauth_required": "Your sign-in has expired; sign in again.",
       "not_the_chosen_offer": "The chosen response did not offer this listing.",
@@ -491,7 +451,8 @@
       "deadline_passed": "The deadline has passed.",
       "listing_not_found": "Not found.",
       "demand_not_found": "This demand was not found.",
-      "invalid_request": "Something is filled in wrong; please check."
+      "invalid_request": "Something is filled in wrong; please check.",
+      "item_not_for_sale": "A file is not licensed for sale; change it in knowbase first."
     }
   }
 }

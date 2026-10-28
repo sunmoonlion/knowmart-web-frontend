@@ -21,7 +21,6 @@ vi.mock('@/lib/market/client', async (importActual) => {
   }
   return mocked
 })
-vi.mock('@/lib/library/client', () => ({ fetchLibrary: vi.fn(async () => []) }))
 
 const CSRF = 'csrf'
 const category = { code: 'tools.lookup', name: '信息查询', group: 'tools', group_name: '工具' }
@@ -75,7 +74,7 @@ beforeEach(() => {
 })
 
 describe('供需市场', () => {
-  it('买知识：选进哪个知识库，买好照实说', async () => {
+  it('买知识：买好进 knowbase 的「买来的」，照实说', async () => {
     vi.mocked(client.fetchListing).mockResolvedValue(LISTING)
     vi.mocked(client.buyListing).mockResolvedValue({
       trade: {
@@ -84,7 +83,7 @@ describe('供需市场', () => {
         listing_ref: 'l1',
         title: LISTING.title,
         price: '50.00',
-        target_app: 'knowlab',
+        target_app: null,
         copied: [],
         demand_id: 'd1',
         created_at: null,
@@ -94,18 +93,17 @@ describe('供需市场', () => {
     expect(await screen.findByRole('heading', { name: '2024 行业数据' })).toBeInTheDocument()
     expect(screen.getByText('¥50.00')).toBeInTheDocument()
     expect(screen.getByText(/发布主体：张三工作室/)).toBeInTheDocument()
-    fireEvent.click(screen.getByLabelText('knowlab 知识库'))
+    // 资料不分应用（user-data/v2）：不用选放进哪里
+    expect(screen.queryByLabelText('knowlab 知识库')).toBeNull()
     vi.mocked(client.buyListing).mockRejectedValueOnce(new Error('网断了'))
     fireEvent.click(screen.getByRole('button', { name: '买下这份' }))
     await waitFor(() => expect(client.buyListing).toHaveBeenCalledTimes(1))
     fireEvent.click(await screen.findByRole('button', { name: '买下这份' }))
-    expect(await screen.findByText('买好了，已复制进你的 knowlab 知识库。')).toBeInTheDocument()
+    expect(
+      await screen.findByText('买好了，在你 knowbase 总栏的「买来的」里。'),
+    ).toBeInTheDocument()
     const [first, second] = vi.mocked(client.buyListing).mock.calls
-    expect(second).toEqual([
-      CSRF,
-      'l1',
-      { request_id: expect.any(String), target_app: 'knowlab', demand_id: 'd1' },
-    ])
+    expect(second).toEqual([CSRF, 'l1', { request_id: expect.any(String), demand_id: 'd1' }])
     expect(first![2].request_id).toBe(second![2].request_id) // 重试沿用同一个键
   })
 
@@ -118,10 +116,11 @@ describe('供需市场', () => {
         listing_ref: 'l1',
         title: LISTING.title,
         price: '50.00',
-        target_app: 'knowbench',
+        target_app: null,
         copied: [],
         demand_id: null,
         status: 'failed',
+        failure: 'item_gone',
         created_at: null,
       },
     })
@@ -129,6 +128,62 @@ describe('供需市场', () => {
     fireEvent.click(await screen.findByRole('button', { name: '买下这份' }))
     expect(await screen.findByText(/没买成：卖家那份资料已经不在了/)).toBeInTheDocument()
     expect(screen.queryByText(/买好了/)).toBeNull()
+  })
+
+  it('卖家上架后不再出售：照说没买成', async () => {
+    vi.mocked(client.fetchListing).mockResolvedValue(LISTING)
+    vi.mocked(client.buyListing).mockResolvedValue({
+      trade: {
+        trade_id: 't2',
+        kind: 'knowledge',
+        listing_ref: 'l1',
+        title: LISTING.title,
+        price: '50.00',
+        target_app: null,
+        copied: [],
+        demand_id: null,
+        status: 'failed',
+        failure: 'item_not_for_sale',
+        created_at: null,
+      },
+    })
+    page(<KnowledgeDetail csrfToken={CSRF} account={null} listingId="l1" demandId={null} />)
+    fireEvent.click(await screen.findByRole('button', { name: '买下这份' }))
+    expect(await screen.findByText(/没买成：卖家不再出售这份资料/)).toBeInTheDocument()
+  })
+
+  it('我发布的：写知识条目从交给 knowmart 的资料里选，不能卖的不让勾', async () => {
+    vi.mocked(client.fetchMyListings).mockResolvedValue({ items: [] })
+    const material = {
+      version_no: 1,
+      media_type: 'text/csv',
+      size_bytes: 4,
+      sha256: 'a'.repeat(64),
+      mine: true,
+    }
+    vi.mocked(client.fetchMyMaterials).mockResolvedValue({
+      items: [
+        { ...material, material_id: 'm1', name: '行业数据.csv', license: 'sale', sellable: true },
+        { ...material, material_id: 'm2', name: '草稿.csv', license: 'self', sellable: false },
+      ],
+    })
+    vi.mocked(client.createListing).mockResolvedValue({} as never)
+    page(<MyPublished csrfToken={CSRF} account={null} />)
+    fireEvent.click(await screen.findByRole('button', { name: '写一条' }))
+    const form = within(await screen.findByRole('form', { name: '知识条目' }))
+    expect(await form.findByLabelText(/草稿\.csv/)).toBeDisabled()
+    expect(form.getByText('（许可不是「可以出售」，去 knowbase 改）')).toBeInTheDocument()
+    fireEvent.click(form.getByLabelText(/行业数据\.csv/))
+    fireEvent.change(form.getByLabelText('名称'), { target: { value: '2024 行业数据' } })
+    fireEvent.change(form.getByLabelText(/^内容说明/), { target: { value: '一份表' } })
+    fireEvent.change(form.getByLabelText(/^来源与权利声明/), { target: { value: '自己整理' } })
+    fireEvent.click(form.getByRole('button', { name: '保存' }))
+    await waitFor(() =>
+      expect(client.createListing).toHaveBeenCalledWith(
+        CSRF,
+        expect.objectContaining({ title: '2024 行业数据', items: [{ item_id: 'm1' }] }),
+      ),
+    )
   })
 
   it('需求：卖家响应；需求方选一家', async () => {

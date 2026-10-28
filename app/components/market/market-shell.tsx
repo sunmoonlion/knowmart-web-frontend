@@ -6,14 +6,13 @@ import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
 
-// 供需市场的栏目（SDD 0018 第十一节第 7 小节）：专家、知识、需求大厅、我发布的、我买到的、知识库、发布主体、驻场规则
+// 供需市场的栏目（SDD 0018 第十一节第 7 小节）：专家、知识、需求大厅、我发布的、我买到的、发布主体、驻场规则（资料在 knowbase 管）
 export const MARKET_SECTIONS = [
   { key: 'market', path: 'knowbots' },
   { key: 'knowledge', path: 'knowledge' },
   { key: 'demands', path: 'demands' },
   { key: 'mine', path: 'mine' },
   { key: 'bought', path: 'bought' },
-  { key: 'library', path: 'library' },
   { key: 'publisher', path: 'publisher' },
   { key: 'rules', path: 'rules' },
 ] as const

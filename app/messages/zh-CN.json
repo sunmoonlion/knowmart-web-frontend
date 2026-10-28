@@ -174,19 +174,6 @@
     "license": "{name}（编号 {number}）",
     "validUntil": "有效期至 {date}",
     "longTerm": "长期有效",
-    "needs": "需要你提供的数据",
-    "needRequired": "必填",
-    "needOptional": "可选",
-    "needCount": "{min}～{max} 份",
-    "needCountOne": "{count} 份",
-    "needTable": "要有：{sheet} {columns}",
-    "needsNote": "在 knowbench 请它时，从你自己的本地或云端知识库选这几样；专家只读你选的那几份。",
-    "format": {
-      "pdf": "PDF",
-      "excel": "Excel",
-      "csv": "CSV",
-      "text": "文本"
-    },
     "unlisted": {
       "declined": "没有上架：你没要这一版",
       "rejected": "没有上架：运营审核没通过",
@@ -204,39 +191,8 @@
       "demands": "需求大厅",
       "mine": "我发布的",
       "bought": "我买到的",
-      "library": "知识库",
       "publisher": "发布主体",
       "rules": "驻场规则"
-    }
-  },
-  "library": {
-    "title": "知识库",
-    "lead": "你放在这里准备上架出售的资料。上架时从这里选；卖出时复制一份给买家，这里删了不影响已卖出的。",
-    "pick": "选择要上传的文件",
-    "upload": "上传",
-    "uploading": "正在上传…",
-    "uploaded": "已上传「{name}」",
-    "removed": "已删除「{name}」",
-    "loading": "加载中…",
-    "empty": "还没有资料。",
-    "emptyHint": "只收 PDF、Excel、CSV、文本，单份不超过 50 MB。",
-    "download": "下载「{name}」",
-    "remove": "删除「{name}」",
-    "confirmRemove": "删除「{name}」？已经卖出的不受影响。",
-    "note": "资料存在平台的知识库服务里，只有你自己看得到；上架前按驻场规则审核。",
-    "error": {
-      "inUse": "这份资料正被用着，暂时不能删。",
-      "listed": "这份资料还在待审或在架的知识条目里，先在「我发布的」下架那一条再删。",
-      "typeNotAllowed": "只收 PDF、Excel、CSV、文本文件。",
-      "contentMismatch": "文件内容和它的类型对不上。",
-      "notUtf8": "文本文件要用 UTF-8 编码。",
-      "tooLarge": "单个文件不能超过 50 MB。",
-      "quotaExceeded": "空间用完了，先删掉不用的。",
-      "emptyFile": "文件是空的。",
-      "gone": "这份资料已经不在了。",
-      "reauth": "登录过期了，请重新登录。",
-      "unavailable": "知识库暂时不可用，请稍后再试。",
-      "failed": "没有成功，请稍后再试。"
     }
   },
   "marketUi": {
@@ -353,7 +309,7 @@
     },
     "knowledge": {
       "title": "知识",
-      "lead": "卖家上架出售的资料。买下后复制一份进你的 knowbench 云端知识库或 knowlab 知识库，归你，能下载。",
+      "lead": "卖家上架出售的资料。买下后 knowbase 给你建这份的使用权，进你 knowbase 总栏的「买来的」，能下载。",
       "empty": "还没有上架的知识。",
       "description": "内容说明",
       "sample": "样张",
@@ -361,12 +317,13 @@
       "resaleAllowed": "卖家允许转卖。",
       "resaleNotAllowed": "买来的不许转卖。",
       "yours": "这是你自己的条目。",
-      "bought": "买好了，已复制进你的 {place}。",
-      "boughtFailed": "没买成：卖家那份资料已经不在了。已复制过去的几份仍在你的 {place} 里。",
+      "bought": "买好了，在你 knowbase 总栏的「买来的」里。",
+      "boughtFailed": "没买成：卖家那份资料已经不在了。已经办好的几份仍在你的「买来的」里。",
       "buy": "买下",
-      "into": "复制进哪个知识库",
       "noPayment": "本期只记成交，不收钱。",
-      "buyNow": "买下这份"
+      "buyNow": "买下这份",
+      "boughtNotForSale": "没买成：卖家不再出售这份资料。已经办好的几份仍在你的「买来的」里。",
+      "where": "买下后进你 knowbase 总栏的「买来的」；要在 knowbench、knowlab 里用，先在 knowbase 把它展示给那个应用。"
     },
     "demands": {
       "title": "需求大厅",
@@ -390,15 +347,15 @@
       "experts": "专家",
       "demands": "需求",
       "responses": "响应",
-      "knowledgeLead": "从你的 knowmart 知识库选资料写成条目，交运营审核后上架。",
+      "knowledgeLead": "从你在 knowbase 交给 knowmart 的资料里选，写成条目，交运营审核后上架。",
       "newListing": "写一条",
       "submit": "交审核",
       "delist": "下架",
       "listingForm": "知识条目",
       "listingTitle": "名称",
       "descriptionHint": "几份、什么格式、覆盖什么",
-      "files": "资料（从你的知识库选）",
-      "noFiles": "知识库里还没有资料，先去「知识库」上传。",
+      "files": "资料（你在 knowbase 交给 knowmart 的）",
+      "noFiles": "还没有交给 knowmart 的资料。先在 knowbase 总栏把要卖的资料「交给 knowmart」。",
       "sampleHint": "前几页或几行，买家买之前能看",
       "rightsHint": "保证你有权出售这些资料",
       "resale": "允许买家转卖",
@@ -409,7 +366,10 @@
       "keepPrivate": "只自用",
       "updatePrice": "改价格",
       "askPublic": "申请公开",
-      "chooseCategory": "申请公开前先选类目"
+      "chooseCategory": "申请公开前先选类目",
+      "filesHint": "能卖的是你自己上传、在 knowbase 把许可设成「可以出售」的资料。",
+      "notForSale": "（许可不是「可以出售」，去 knowbase 改）",
+      "notYours": "（不是你上传的，不能卖）"
     },
     "bought": {
       "title": "我买到的",
@@ -423,7 +383,8 @@
       "words": "说一句",
       "sendReview": "评价",
       "reply": "回复评价",
-      "sendReply": "回复"
+      "sendReply": "回复",
+      "notForSale": "没买成：卖家不再出售这份资料"
     },
     "publisher": {
       "title": "发布主体与资质",
@@ -481,9 +442,8 @@
       "document_type_invalid": "只收 JPEG、PNG 或 PDF。",
       "document_too_large": "一张不超过 5 MB。",
       "license_not_needed": "这个类目不用证照。",
-      "item_not_found": "有一份资料已不在你的知识库里。",
+      "item_not_found": "有一份资料已不在你交给 knowmart 的资料里。",
       "item_gone": "卖家那份资料已经不在了。",
-      "buyer_quota_exceeded": "你的知识库空间不够了。",
       "knowbase_unconfigured": "知识库暂时不可用。",
       "reauth_required": "登录过期了，请重新登录。",
       "not_the_chosen_offer": "选中的响应附的不是这一条。",
@@ -491,7 +451,8 @@
       "deadline_passed": "期限已经过了。",
       "listing_not_found": "找不到这一条。",
       "demand_not_found": "找不到这条需求。",
-      "invalid_request": "有填得不对的地方，请检查。"
+      "invalid_request": "有填得不对的地方，请检查。",
+      "item_not_for_sale": "有一份资料的许可不是「可以出售」，先在 knowbase 改。"
     }
   }
 }

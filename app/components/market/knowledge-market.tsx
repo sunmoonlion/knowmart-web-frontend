@@ -116,7 +116,8 @@ export function KnowledgeMarket({ account }: { account: React.ReactNode }) {
   )
 }
 
-// 一条知识：内容说明、几份、样张、权利声明、发布主体、评价；买下复制进你选的知识库
+// 一条知识：内容说明、几份、样张、权利声明、发布主体、评价；买下后 knowbase 给你建使用权，
+// 进你总栏的「买来的」（user-data/v2，不复制、不分应用）
 export function KnowledgeDetail({
   csrfToken,
   account,
@@ -128,14 +129,12 @@ export function KnowledgeDetail({
     queryKey: ['market', 'listing', listingId] as const,
     queryFn: () => fetchListing(listingId),
   })
-  const [target, setTarget] = useState<'knowbench' | 'knowlab'>('knowbench')
-  // 这一次购买的幂等键：没成功再点沿用它，后端接着做原来那一笔；改了买进哪里就换一个
-  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
+  // 这一次购买的幂等键：没成功再点沿用它，后端接着做原来那一笔
+  const [requestId] = useState(() => crypto.randomUUID())
   const buy = useMutation({
     mutationFn: () =>
       buyListing(csrfToken, listingId, {
         request_id: requestId,
-        target_app: target,
         ...(demandId ? { demand_id: demandId } : {}),
       }),
   })
@@ -193,37 +192,18 @@ export function KnowledgeDetail({
               <p className="text-muted-foreground text-sm">{t('knowledge.yours')}</p>
             ) : buy.isSuccess ? (
               <p role="status" className="rounded-lg border px-3 py-2 text-sm">
-                {t(
-                  buy.data.trade.status === 'failed'
-                    ? 'knowledge.boughtFailed'
-                    : 'knowledge.bought',
-                  {
-                    place: t(`place.${buy.data.trade.target_app ?? 'knowbench'}`),
-                  },
-                )}
+                {buy.data.trade.status === 'failed'
+                  ? t(
+                      buy.data.trade.failure === 'item_not_for_sale'
+                        ? 'knowledge.boughtNotForSale'
+                        : 'knowledge.boughtFailed',
+                    )
+                  : t('knowledge.bought')}
               </p>
             ) : (
               <section className="space-y-3 rounded-xl border p-4 text-sm">
                 <h2 className="font-semibold">{t('knowledge.buy')}</h2>
-                <fieldset className="space-y-1">
-                  <legend className="text-muted-foreground mb-1 text-xs">
-                    {t('knowledge.into')}
-                  </legend>
-                  {(['knowbench', 'knowlab'] as const).map((place) => (
-                    <label key={place} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="target"
-                        checked={target === place}
-                        onChange={() => {
-                          setTarget(place)
-                          setRequestId(crypto.randomUUID())
-                        }}
-                      />
-                      {t(`place.${place}`)}
-                    </label>
-                  ))}
-                </fieldset>
+                <p className="text-muted-foreground text-xs">{t('knowledge.where')}</p>
                 <p className="text-muted-foreground text-xs">{t('knowledge.noPayment')}</p>
                 <Button disabled={buy.isPending} onClick={() => buy.mutate()}>
                   {buy.isPending ? t('working') : t('knowledge.buyNow')}

@@ -154,6 +154,23 @@ export const demandDetailSchema = demandSchema.extend({
 })
 export type DemandDetail = z.infer<typeof demandDetailSchema>
 
+// 写知识条目时选的资料：卖家在 knowbase 总栏交给 knowmart 的（user-data/v2 的 knowmart 栏）。
+// 能卖 = 自己的、许可是「可以出售」；不能卖的照样列出来，说明去 knowbase 改
+export const materialSchema = z
+  .object({
+    material_id: z.string(),
+    name: z.string(),
+    version_no: z.number().int(),
+    media_type: z.string(),
+    size_bytes: z.number().int(),
+    sha256: z.string(),
+    license: z.string(),
+    mine: z.boolean(),
+    sellable: z.boolean(),
+  })
+  .loose()
+export type Material = z.infer<typeof materialSchema>
+
 export const tradeSchema = z
   .object({
     trade_id: z.string(),
@@ -161,12 +178,15 @@ export const tradeSchema = z
     listing_ref: z.string(),
     title: z.string(),
     price: money,
+    // v1 时买知识复制进的应用；user-data/v2 不分区，新成交为空，旧的留作历史
     target_app: z.enum(['knowbench', 'knowlab']).nullable(),
     copied: z.array(
       z.object({ name: z.string().nullable(), item_id: z.string().nullable() }).loose(),
     ),
     demand_id: z.string().nullable(),
     status: z.enum(['copying', 'done', 'failed']).optional(),
+    // 没买成的原因：卖家那份没了（item_gone）、上架后不再出售（item_not_for_sale）
+    failure: z.string().nullable().optional(),
     created_at: z.string().nullable(),
     role: z.enum(['buyer', 'seller']).optional(),
     review: reviewSchema.nullable().optional(),

@@ -7,7 +7,6 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import type { Listing } from '@/contracts/market'
-import { fetchLibrary } from '@/lib/library/client'
 import { MARKET_CATEGORIES } from '@/lib/market/categories'
 import {
   createListing,
@@ -15,6 +14,7 @@ import {
   fetchMyDemands,
   fetchMyExperts,
   fetchMyListings,
+  fetchMyMaterials,
   fetchMyResponses,
   fetchTrades,
   replyTrade,
@@ -186,9 +186,10 @@ function ListingEditor({
   onDone: () => void
 }) {
   const t = useTranslations('marketUi')
-  const library = useQuery({
-    queryKey: ['web', 'library'] as const,
-    queryFn: fetchLibrary,
+  // 资料从 knowbase 来：用户在 knowbase 总栏交给 knowmart 的（user-data/v2 的 knowmart 栏）
+  const materials = useQuery({
+    queryKey: ['market', 'materials'] as const,
+    queryFn: fetchMyMaterials,
     retry: false,
   })
   const [form, setForm] = useState<ListingForm>({
@@ -253,27 +254,35 @@ function ListingEditor({
       </Field>
       <fieldset className="space-y-1 text-sm">
         <legend className="font-medium">{t('mine.files')}</legend>
-        {library.isError ? <Problem error={library.error} /> : null}
-        {(library.data ?? []).length === 0 && !library.isPending ? (
+        {materials.isError ? <Problem error={materials.error} /> : null}
+        {(materials.data?.items ?? []).length === 0 && !materials.isPending ? (
           <p className="text-muted-foreground text-xs">{t('mine.noFiles')}</p>
         ) : null}
-        {(library.data ?? []).map((file) => (
-          <label key={file.item_id} className="flex items-center gap-2">
+        {(materials.data?.items ?? []).map((file) => (
+          <label key={file.material_id} className="flex items-center gap-2">
             <input
               type="checkbox"
-              checked={chosen.has(file.item_id)}
+              // 不能卖的不让勾；已经选在条目里的（后来许可改低了）留着能去掉
+              disabled={!file.sellable && !chosen.has(file.material_id)}
+              checked={chosen.has(file.material_id)}
               onChange={() =>
                 setForm({
                   ...form,
-                  items: chosen.has(file.item_id)
-                    ? form.items.filter((i) => i.item_id !== file.item_id)
-                    : [...form.items, { item_id: file.item_id }],
+                  items: chosen.has(file.material_id)
+                    ? form.items.filter((i) => i.item_id !== file.material_id)
+                    : [...form.items, { item_id: file.material_id }],
                 })
               }
             />
             {file.name}
+            {file.sellable ? null : (
+              <span className="text-muted-foreground text-xs">
+                {t(file.mine ? 'mine.notForSale' : 'mine.notYours')}
+              </span>
+            )}
           </label>
         ))}
+        <p className="text-muted-foreground text-xs">{t('mine.filesHint')}</p>
       </fieldset>
       <Field label={t('knowledge.sample')} hint={t('mine.sampleHint')}>
         <textarea
@@ -524,7 +533,13 @@ export function MyTrades({ csrfToken, account }: Props) {
                     </span>
                   ) : null}
                   {trade.status === 'failed' ? (
-                    <span className="text-destructive text-xs">{t('bought.failed')}</span>
+                    <span className="text-destructive text-xs">
+                      {t(
+                        trade.failure === 'item_not_for_sale'
+                          ? 'bought.notForSale'
+                          : 'bought.failed',
+                      )}
+                    </span>
                   ) : null}
                 </p>
                 {trade.review ? (
