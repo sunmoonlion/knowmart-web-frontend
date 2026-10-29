@@ -96,6 +96,7 @@ export const listingSchema = z
     updated_at: z.string().nullable(),
     status: z.enum(['draft', 'pending', 'listed', 'rejected', 'delisted', 'taken_down']).optional(),
     review_note: z.string().nullable().optional(),
+    delist_reason: z.enum(['item_gone', 'item_not_for_sale']).nullable().optional(),
     publisher: z
       .object({ name: z.string(), kind: z.string(), real_name_verified: z.boolean() })
       .loose()
@@ -180,11 +181,11 @@ export const tradeSchema = z
     price: money,
     // v1 时买知识复制进的应用；user-data/v2 不分区，新成交为空，旧的留作历史
     target_app: z.enum(['knowbench', 'knowlab']).nullable(),
-    copied: z.array(
+    granted: z.array(
       z.object({ name: z.string().nullable(), item_id: z.string().nullable() }).loose(),
     ),
     demand_id: z.string().nullable(),
-    status: z.enum(['copying', 'done', 'failed']).optional(),
+    status: z.enum(['granting', 'done', 'failed']).optional(),
     // 没买成的原因：卖家那份没了（item_gone）、上架后不再出售（item_not_for_sale）
     failure: z.string().nullable().optional(),
     created_at: z.string().nullable(),

@@ -143,6 +143,11 @@ function MyListings({ csrfToken }: { csrfToken: string }) {
                 {t('reviewNote', { note: item.review_note })}
               </span>
             ) : null}
+            {item.status === 'delisted' && item.delist_reason ? (
+              <span className="text-destructive w-full text-xs">
+                {t(`delistReason.${item.delist_reason}`)}
+              </span>
+            ) : null}
             <span className="flex gap-1">
               {['draft', 'rejected', 'delisted'].includes(item.status ?? '') ? (
                 <>

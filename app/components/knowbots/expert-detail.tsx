@@ -285,7 +285,6 @@ function Body({
                   : t('noBundled')}
               </p>
             </div>
-            <p>{sections.data.accepts_user_data ? t('acceptsUserData') : t('ownDataOnly')}</p>
           </>
         ) : tab === 'delivers' ? (
           sections.delivers.length === 0 ? (

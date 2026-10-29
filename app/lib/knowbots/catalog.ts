@@ -13,7 +13,6 @@ import { KnowbotContractError } from '@/lib/knowbots/client'
 export type CatalogFilters = {
   category: string | null
   q: string
-  data: 'all' | 'own' | 'user'
   updated: 'any' | '7d' | '30d'
   sort: 'updated' | 'name'
   page: number
@@ -22,13 +21,11 @@ export type CatalogFilters = {
 export const DEFAULT_FILTERS: CatalogFilters = {
   category: null,
   q: '',
-  data: 'all',
   updated: 'any',
   sort: 'updated',
   page: 1,
 }
 
-const DATA = new Set(['all', 'own', 'user'])
 const UPDATED = new Set(['any', '7d', '30d'])
 const SORT = new Set(['updated', 'name'])
 const CATEGORY = /^[a-z_.]{1,64}$/
@@ -44,7 +41,6 @@ export function filtersFrom(search: URLSearchParams): CatalogFilters {
   return {
     category: category && CATEGORY.test(category) ? category : null,
     q: (search.get('q') ?? '').slice(0, 100),
-    data: pick('data', DATA, 'all'),
     updated: pick('updated', UPDATED, 'any'),
     sort: pick('sort', SORT, 'updated'),
     page: Number.isFinite(page) && page >= 1 ? page : 1,
@@ -60,7 +56,6 @@ export function filtersTo(filters: CatalogFilters, keep: URLSearchParams): URLSe
   }
   if (filters.category) out.set('category', filters.category)
   if (filters.q.trim()) out.set('q', filters.q.trim())
-  if (filters.data !== 'all') out.set('data', filters.data)
   if (filters.updated !== 'any') out.set('updated', filters.updated)
   if (filters.sort !== 'updated') out.set('sort', filters.sort)
   if (filters.page > 1) out.set('page', String(filters.page))

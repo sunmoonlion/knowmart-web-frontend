@@ -88,7 +88,6 @@ const detail: Detail = {
     data: {
       asks_by_question: true,
       bound_count: 1,
-      accepts_user_data: true,
     },
     delivers: [{ step: '成稿', file: '底稿/成稿.md' }],
     steps: [{ title: '取数', summary: '按口径取数' }],
@@ -209,7 +208,6 @@ describe('专家详情', () => {
     expect(screen.queryByRole('tab', { name: '发布主体' })).toBeNull()
     fireEvent.click(screen.getByRole('tab', { name: '需要的数据' }))
     expect(screen.getByText(messages.experts.byQuestion)).toBeInTheDocument()
-    expect(screen.getByText(messages.experts.acceptsUserData)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('tab', { name: '交回什么' }))
     expect(screen.getByText(/底稿\/成稿\.md/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('tab', { name: '版本记录' }))
@@ -247,7 +245,6 @@ describe('专家详情', () => {
         data: {
           asks_by_question: true,
           bound_count: 2,
-          accepts_user_data: true,
         },
       },
     })

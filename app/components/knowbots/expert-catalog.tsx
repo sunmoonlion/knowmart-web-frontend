@@ -208,16 +208,6 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
 
           <div className="flex flex-wrap items-center gap-3 text-sm" aria-label={t('filters')}>
             <Choice
-              id="filter-data"
-              label={t('data')}
-              value={filters.data}
-              options={[
-                ['all', t('dataAll')],
-                ['own', t('dataOwn')],
-              ]}
-              onChange={(value) => go({ data: value as CatalogFilters['data'] })}
-            />
-            <Choice
               id="filter-updated"
               label={t('updated')}
               value={filters.updated}
@@ -475,12 +465,6 @@ function chipsOf(
     })
   }
   if (filters.q.trim()) chips.push({ key: 'q', label: filters.q.trim(), clear: { q: '' } })
-  if (filters.data !== 'all')
-    chips.push({
-      key: 'data',
-      label: t(filters.data === 'own' ? 'dataOwn' : 'dataUser'),
-      clear: { data: 'all' },
-    })
   if (filters.updated !== 'any')
     chips.push({
       key: 'updated',

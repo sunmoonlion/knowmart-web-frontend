@@ -109,10 +109,6 @@
     "categories": "类目",
     "fromWorkbench": "从工作台来：选一位专家，点「请这位」回到工作台。",
     "filters": "筛选",
-    "data": "数据",
-    "dataAll": "全部",
-    "dataOwn": "只用专家自带数据",
-    "dataUser": "需要你提供数据",
     "updated": "更新时间",
     "updatedAny": "不限",
     "updated7d": "近 7 天",
@@ -157,8 +153,6 @@
     "byQuestion": "按你的问题定数据",
     "byQuestionNote": "每次请它，先由你自己的模型读这位专家的做法和你的问题，列出要哪些数据；你确认、可改，确认后才去取、才开始做。",
     "boundCount": "专家自带 {count} 份（作者挑选的，看不到内容，也不能下载）。",
-    "acceptsUserData": "请它时要你提供自己的数据。",
-    "ownDataOnly": "只用专家自带的数据，不用你提供。",
     "deliverFile": "成稿文件：{file}",
     "deliverResult": "交回这一步的结果",
     "active": "可用",
@@ -453,6 +447,10 @@
       "demand_not_found": "找不到这条需求。",
       "invalid_request": "有填得不对的地方，请检查。",
       "item_not_for_sale": "有一份资料的许可不是「可以出售」，先在 knowbase 改。"
+    },
+    "delistReason": {
+      "item_gone": "自动下架：条目里有资料已不在 knowbase 交给 knowmart 的那一栏（删了或不再交给 knowmart）。补回后改好再交审。",
+      "item_not_for_sale": "自动下架：条目里有资料的许可已不是「可以出售」。改回后再交审。"
     }
   }
 }
