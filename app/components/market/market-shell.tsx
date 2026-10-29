@@ -6,14 +6,15 @@ import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils'
 
-// 供需市场的栏目（SDD 0018 第十一节第 7 小节）：专家、知识、需求大厅、我发布的、我买到的、发布主体、驻场规则（资料在 knowbase 管）
+// 供需市场的栏目（SDD 0018 第十一节第 7 之二小节，取代第 7 小节那一套）：首页是小店列表；
+// 跨店的「找专家」「找知识」「需求大厅」照旧；我发布的、发布主体并进「我的小店」；「我买到的」
+// 拆掉（买来的知识在 knowbase 总栏，请过的专家在 knowbench，订单留在小店的交易记录）
 export const MARKET_SECTIONS = [
+  { key: 'home', path: '' },
   { key: 'market', path: 'knowbots' },
   { key: 'knowledge', path: 'knowledge' },
   { key: 'demands', path: 'demands' },
-  { key: 'mine', path: 'mine' },
-  { key: 'bought', path: 'bought' },
-  { key: 'publisher', path: 'publisher' },
+  { key: 'shop', path: 'shop' },
   { key: 'rules', path: 'rules' },
 ] as const
 
@@ -25,8 +26,11 @@ export function MarketNav({ className }: { className?: string }) {
   return (
     <nav aria-label={t('sections')} className={cn('flex gap-1 overflow-x-auto', className)}>
       {MARKET_SECTIONS.map((section) => {
-        const href = `/${locale}/${section.path}`
-        const active = pathname === href || pathname.startsWith(`${href}/`)
+        const href = section.path ? `/${locale}/${section.path}` : `/${locale}`
+        // 首页只认它自己；小店详情页（/shops/…）算在首页下面
+        const active = section.path
+          ? pathname === href || pathname.startsWith(`${href}/`)
+          : pathname === href || pathname.startsWith(`${href}/shops/`)
         return (
           <Link
             key={section.key}
@@ -58,7 +62,7 @@ export function MarketShell({
   return (
     <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">
       <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-6 py-3">
-        <Link href={`/${locale}/knowbots`} className="text-primary font-semibold">
+        <Link href={`/${locale}`} className="text-primary font-semibold">
           {t('brand')}
         </Link>
         <MarketNav className="flex-1" />

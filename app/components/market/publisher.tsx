@@ -19,35 +19,32 @@ import {
 import { MarketShell } from './market-shell'
 import { Badge, Field, inputClass, Problem } from './parts'
 
-type Props = { csrfToken: string; account: React.ReactNode }
 const KEY = ['market', 'publisher'] as const
 const STATUS_TONE = { pending: 'warn', approved: 'ok', rejected: 'bad', revoked: 'bad' } as const
 
 // 发布主体与资质（SDD 0018 第十一节第 5 小节）：个人实名或营业执照；照片只给运营审核看，审过后留一年；
-// 公开专家、上架知识都要先审过，要证照的类目还要证照
-export function PublisherScreen({ csrfToken, account }: Props) {
+// 公开专家、上架知识都要先审过，要证照的类目还要证照。并进「我的小店」的店主资料（第 7 之二小节）
+export function PublisherPanel({ csrfToken }: { csrfToken: string }) {
   const t = useTranslations('marketUi')
   const mine = useQuery({ queryKey: KEY, queryFn: fetchMyPublisher })
   return (
-    <MarketShell account={account}>
-      <div className="mx-auto w-full max-w-3xl space-y-8 px-6 py-8">
-        <header>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('publisher.title')}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{t('publisher.lead')}</p>
-        </header>
-        {mine.isPending ? (
-          <p className="text-muted-foreground text-sm">{t('loading')}</p>
-        ) : mine.isError ? (
-          <Problem error={mine.error} />
-        ) : (
-          <>
-            <Identity csrfToken={csrfToken} mine={mine.data} />
-            {mine.data.publisher ? <Documents csrfToken={csrfToken} mine={mine.data} /> : null}
-            {mine.data.publisher ? <Licenses csrfToken={csrfToken} mine={mine.data} /> : null}
-          </>
-        )}
-      </div>
-    </MarketShell>
+    <section className="space-y-8">
+      <header>
+        <h2 className="text-lg font-semibold">{t('publisher.title')}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">{t('publisher.lead')}</p>
+      </header>
+      {mine.isPending ? (
+        <p className="text-muted-foreground text-sm">{t('loading')}</p>
+      ) : mine.isError ? (
+        <Problem error={mine.error} />
+      ) : (
+        <>
+          <Identity csrfToken={csrfToken} mine={mine.data} />
+          {mine.data.publisher ? <Documents csrfToken={csrfToken} mine={mine.data} /> : null}
+          {mine.data.publisher ? <Licenses csrfToken={csrfToken} mine={mine.data} /> : null}
+        </>
+      )}
+    </section>
   )
 }
 
@@ -87,12 +84,12 @@ function Identity({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher })
   })
   return (
     <section className="space-y-3" aria-label={t('publisher.identity')}>
-      <h2 className="flex items-center gap-2 font-semibold">
+      <h3 className="flex items-center gap-2 font-semibold">
         {t('publisher.identity')}
         {p ? (
           <Badge tone={STATUS_TONE[p.review_status]}>{t(`reviewStatus.${p.review_status}`)}</Badge>
         ) : null}
-      </h2>
+      </h3>
       {p?.review_note ? (
         <p className="text-muted-foreground text-sm">{t('reviewNote', { note: p.review_note })}</p>
       ) : null}
@@ -201,7 +198,7 @@ function Documents({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher }
   })
   return (
     <section className="space-y-3" aria-label={t('publisher.documents')}>
-      <h2 className="font-semibold">{t('publisher.documents')}</h2>
+      <h3 className="font-semibold">{t('publisher.documents')}</h3>
       <p className="text-muted-foreground text-xs">{t('publisher.documentsLead')}</p>
       <ul className="space-y-1 text-sm">
         {mine.documents.map((d) => (
@@ -267,7 +264,7 @@ function Licenses({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher })
   })
   return (
     <section className="space-y-3" aria-label={t('publisher.licenses')}>
-      <h2 className="font-semibold">{t('publisher.licenses')}</h2>
+      <h3 className="font-semibold">{t('publisher.licenses')}</h3>
       <p className="text-muted-foreground text-xs">{t('publisher.licensesLead')}</p>
       <ul className="space-y-2 text-sm">
         {mine.licenses.map((lic) => (

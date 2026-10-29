@@ -180,12 +180,11 @@
     "brand": "knowmart",
     "sections": "栏目",
     "nav": {
-      "market": "专家",
-      "knowledge": "知识",
+      "home": "小店",
+      "market": "找专家",
+      "knowledge": "找知识",
       "demands": "需求大厅",
-      "mine": "我发布的",
-      "bought": "我买到的",
-      "publisher": "发布主体",
+      "shop": "我的小店",
       "rules": "驻场规则"
     }
   },
@@ -319,6 +318,50 @@
       "boughtNotForSale": "没买成：卖家不再出售这份资料。已经办好的几份仍在你的「买来的」里。",
       "where": "买下后进你 knowbase 总栏的「买来的」；要在 knowbench、knowlab 里用，先在 knowbase 把它展示给那个应用。"
     },
+    "shops": {
+      "title": "小店",
+      "lead": "每位用户在市场上有一家小店，放自己的供给（专家、知识）和公开的需求。这里只列有东西在架的店，按时间或店名排，不做推荐。",
+      "search": "按店名找",
+      "sort": "排序",
+      "sortTime": "最近更新",
+      "sortName": "店名",
+      "empty": "还没有有东西在架的小店。",
+      "counts": "专家 {experts} · 知识 {knowledge} · 需求 {demands}",
+      "platform": "平台",
+      "suspended": "这家小店已暂停营业。",
+      "experts": "在架的专家",
+      "knowledge": "在架的知识",
+      "demands": "公开的需求",
+      "reviews": "评价",
+      "none": "暂时没有。",
+      "qualifications": "资质",
+      "noPublisher": "发布主体还没审过",
+      "perAsk": "每次请 {price}",
+      "of": "小店：{name}",
+      "buyerShop": "买家的小店：{name}",
+      "sellerShop": "卖家的小店：{name}",
+      "reviewOf": "{title}"
+    },
+    "myShop": {
+      "title": "我的小店",
+      "experts": "我的专家",
+      "knowledge": "我的知识",
+      "demands": "我的需求",
+      "responses": "我的响应",
+      "trades": "交易记录",
+      "owner": "店主资料",
+      "name": "店名",
+      "nameHint": "默认取你的昵称；不能含「荐股」「推荐」之类的词。改了会留痕。",
+      "rename": "改店名",
+      "listed": "有东西在架，在首页的小店列表上。",
+      "notListed": "还没有东西在架，不在首页的小店列表上，别人也搜不到。",
+      "suspended": "小店已被平台暂停：{note}。暂停期间不能交审、申请公开、发需求、响应，别人也买不了、请不了；已成交的照旧。",
+      "view": "看别人眼里的小店",
+      "history": "留痕",
+      "renamed": "改店名：{old} → {new}",
+      "suspendedEvent": "平台暂停：{note}",
+      "restoredEvent": "平台恢复：{note}"
+    },
     "demands": {
       "title": "需求大厅",
       "lead": "买家发需求，卖家响应；买家选一家成交。",
@@ -333,14 +376,11 @@
       "budget": "预算（元）",
       "budgetHint": "可以不写",
       "publish": "发布",
-      "close": "结束这条需求"
+      "close": "结束这条需求",
+      "publicToShop": "公开到我的小店",
+      "publicToShopHint": "不勾也会匿名进需求大厅；勾了，这条需求还会显示在你的小店页上。"
     },
     "mine": {
-      "title": "我发布的",
-      "knowledge": "知识条目",
-      "experts": "专家",
-      "demands": "需求",
-      "responses": "响应",
       "knowledgeLead": "从你在 knowbase 交给 knowmart 的资料里选，写成条目，交运营审核后上架。",
       "newListing": "写一条",
       "submit": "交审核",
@@ -366,9 +406,8 @@
       "notYours": "（不是你上传的，不能卖）"
     },
     "bought": {
-      "title": "我买到的",
-      "buyer": "我买到的",
-      "seller": "我卖出的",
+      "buyer": "买入的",
+      "seller": "卖出的",
       "empty": "还没有成交。",
       "into": "进了 {place}",
       "failed": "没买成：卖家那份资料已经不在了",
@@ -378,11 +417,19 @@
       "sendReview": "评价",
       "reply": "回复评价",
       "sendReply": "回复",
-      "notForSale": "没买成：卖家不再出售这份资料"
+      "notForSale": "没买成：卖家不再出售这份资料",
+      "openPurchased": "去 knowbase「买来的」看这份",
+      "openUploaded": "去 knowbase 看这份资料",
+      "openExpert": "去 knowbench「专家」请",
+      "openOwnExpert": "看这位专家",
+      "on": "在架",
+      "off": "已下架",
+      "expertOff": "不可请",
+      "soldAs": "卖的主体：{name}"
     },
     "publisher": {
       "title": "发布主体与资质",
-      "lead": "公开专家、上架知识要先入驻：个人实名，非个人用营业执照；要证照的类目还要证照。照片只给运营审核看，审过后留一年清掉。",
+      "lead": "一店一主体。公开专家、上架知识要先入驻：个人实名，非个人用营业执照；要证照的类目还要证照。主体改了要重审，留变更历史；成交上标当时卖的主体。照片只给运营审核看，审过后留一年清掉。",
       "identity": "发布主体",
       "idOnFile": "已登记的身份证号：{masked}",
       "kind": "主体",
@@ -446,7 +493,10 @@
       "listing_not_found": "找不到这一条。",
       "demand_not_found": "找不到这条需求。",
       "invalid_request": "有填得不对的地方，请检查。",
-      "item_not_for_sale": "有一份资料的许可不是「可以出售」，先在 knowbase 改。"
+      "item_not_for_sale": "有一份资料的许可不是「可以出售」，先在 knowbase 改。",
+      "shop_suspended": "你的小店被平台暂停了，暂时不能这样做。",
+      "shop_name_forbidden": "店名里有驻场规则不许用的词。",
+      "shop_not_found": "找不到这家小店。"
     },
     "delistReason": {
       "item_gone": "自动下架：条目里有资料已不在 knowbase 交给 knowmart 的那一栏（删了或不再交给 knowmart）。补回后改好再交审。",

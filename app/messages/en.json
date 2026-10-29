@@ -180,12 +180,11 @@
     "brand": "knowmart",
     "sections": "Sections",
     "nav": {
-      "market": "Experts",
-      "knowledge": "Knowledge",
+      "home": "Shops",
+      "market": "Find experts",
+      "knowledge": "Find knowledge",
       "demands": "Demands",
-      "mine": "My listings",
-      "bought": "Purchases",
-      "publisher": "Publisher",
+      "shop": "My shop",
       "rules": "House rules"
     }
   },
@@ -319,6 +318,50 @@
       "boughtNotForSale": "Not bought: the seller no longer sells this file. Anything already granted stays under “Purchased”.",
       "where": "It goes under “Purchased” in your knowbase library; to use it in knowbench or knowlab, show it to that app in knowbase first."
     },
+    "shops": {
+      "title": "Shops",
+      "lead": "Every user has one shop in the market, holding their supply (experts, knowledge) and the demands they make public. Only shops with something on show are listed, by time or name; nothing is recommended.",
+      "search": "Find by shop name",
+      "sort": "Sort",
+      "sortTime": "Recently updated",
+      "sortName": "Name",
+      "empty": "No shop has anything on show yet.",
+      "counts": "Experts {experts} · Knowledge {knowledge} · Demands {demands}",
+      "platform": "Platform",
+      "suspended": "This shop is suspended.",
+      "experts": "Experts on show",
+      "knowledge": "Knowledge on show",
+      "demands": "Public demands",
+      "reviews": "Reviews",
+      "none": "Nothing yet.",
+      "qualifications": "Qualifications",
+      "noPublisher": "Publisher not approved yet",
+      "perAsk": "{price} per ask",
+      "of": "Shop: {name}",
+      "buyerShop": "Buyer's shop: {name}",
+      "sellerShop": "Seller's shop: {name}",
+      "reviewOf": "{title}"
+    },
+    "myShop": {
+      "title": "My shop",
+      "experts": "My experts",
+      "knowledge": "My knowledge",
+      "demands": "My demands",
+      "responses": "My responses",
+      "trades": "Trades",
+      "owner": "Owner",
+      "name": "Shop name",
+      "nameHint": "Your nickname by default; words like 'stock tips' or 'recommend' are not allowed. Changes are kept on record.",
+      "rename": "Rename",
+      "listed": "Something is on show: the shop is listed on the home page.",
+      "notListed": "Nothing on show yet: the shop is not listed on the home page and cannot be found.",
+      "suspended": "The platform suspended this shop: {note}. While suspended you cannot submit, ask to go public, post demands or respond, and others cannot buy or ask; past trades stand.",
+      "view": "See the shop as others do",
+      "history": "Record",
+      "renamed": "Renamed: {old} → {new}",
+      "suspendedEvent": "Suspended by the platform: {note}",
+      "restoredEvent": "Restored by the platform: {note}"
+    },
     "demands": {
       "title": "Demand hall",
       "lead": "Buyers post demands, sellers respond, and the buyer chooses one.",
@@ -333,14 +376,11 @@
       "budget": "Budget (¥)",
       "budgetHint": "Optional",
       "publish": "Post",
-      "close": "Close this demand"
+      "close": "Close this demand",
+      "publicToShop": "Show in my shop",
+      "publicToShopHint": "Either way it goes into the demand hall without your name; ticked, it also shows on your shop page."
     },
     "mine": {
-      "title": "My listings",
-      "knowledge": "Knowledge",
-      "experts": "Experts",
-      "demands": "Demands",
-      "responses": "Responses",
       "knowledgeLead": "Write listings from material you handed to knowmart in knowbase; operators review them before they go up.",
       "newListing": "New listing",
       "submit": "Submit for review",
@@ -366,7 +406,6 @@
       "notYours": "(not uploaded by you; cannot be sold)"
     },
     "bought": {
-      "title": "My purchases",
       "buyer": "Bought",
       "seller": "Sold",
       "empty": "No trades yet.",
@@ -378,11 +417,19 @@
       "sendReview": "Review",
       "reply": "Reply to the review",
       "sendReply": "Reply",
-      "notForSale": "Not bought: the seller no longer sells this file"
+      "notForSale": "Not bought: the seller no longer sells this file",
+      "openPurchased": "Open it in knowbase (Purchased)",
+      "openUploaded": "Open the file in knowbase",
+      "openExpert": "Ask it in knowbench (Experts)",
+      "openOwnExpert": "See this expert",
+      "on": "On show",
+      "off": "Taken off",
+      "expertOff": "Cannot be asked",
+      "soldAs": "Sold as: {name}"
     },
     "publisher": {
       "title": "Publisher and licenses",
-      "lead": "Register before making experts public or listing knowledge: individuals with a real name, organizations with a business license; licensed categories also need the license. Photos are only for operators and are deleted a year after review.",
+      "lead": "One publisher per shop. Register before making experts public or listing knowledge: individuals with their real name, others with a business licence; licensed categories also need a licence. A changed publisher is reviewed again and kept on record; trades name the publisher at the time. Photos are seen only by reviewers and cleared a year after review.",
       "identity": "Publisher",
       "idOnFile": "ID number on file: {masked}",
       "kind": "Type",
@@ -446,7 +493,10 @@
       "listing_not_found": "Not found.",
       "demand_not_found": "This demand was not found.",
       "invalid_request": "Something is filled in wrong; please check.",
-      "item_not_for_sale": "A file is not licensed for sale; change it in knowbase first."
+      "item_not_for_sale": "A file is not licensed for sale; change it in knowbase first.",
+      "shop_suspended": "Your shop is suspended by the platform; this cannot be done now.",
+      "shop_name_forbidden": "The shop name holds a word the house rules forbid.",
+      "shop_not_found": "No such shop."
     },
     "delistReason": {
       "item_gone": "Taken off automatically: a material in this listing is no longer handed to knowmart in knowbase (deleted or moved). Put it back, then resubmit.",

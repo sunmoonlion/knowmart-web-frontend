@@ -10,7 +10,17 @@ import { MARKET_CATEGORIES } from '@/lib/market/categories'
 import { buyListing, fetchKnowledge, fetchListing } from '@/lib/market/client'
 
 import { MarketShell } from './market-shell'
-import { Badge, inputClass, Pager, Price, Problem, ReportButton, Reviews, Stars } from './parts'
+import {
+  Badge,
+  inputClass,
+  Pager,
+  Price,
+  Problem,
+  ReportButton,
+  Reviews,
+  ShopLink,
+  Stars,
+} from './parts'
 
 type Props = { csrfToken: string; account: React.ReactNode }
 
@@ -160,6 +170,7 @@ export function KnowledgeDetail({
                     {item.publisher.real_name_verified ? ` · ${t('verified')}` : ''}
                   </span>
                 ) : null}
+                <ShopLink shop={item.shop} />
               </p>
             </header>
             <section className="space-y-2 text-sm">

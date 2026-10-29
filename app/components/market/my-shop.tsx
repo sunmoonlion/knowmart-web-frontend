@@ -1,12 +1,13 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useLocale, useTranslations } from 'next-intl'
+import { useFormatter, useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useState } from 'react'
 
+import { CrossAppLink } from '@/components/common/cross-app-link'
 import { Button } from '@/components/ui/button'
-import type { Listing } from '@/contracts/market'
+import type { Listing, MyShop, Trade } from '@/contracts/market'
 import { MARKET_CATEGORIES } from '@/lib/market/categories'
 import {
   createListing,
@@ -16,7 +17,9 @@ import {
   fetchMyListings,
   fetchMyMaterials,
   fetchMyResponses,
+  fetchMyShop,
   fetchTrades,
+  renameShop,
   replyTrade,
   reviewTrade,
   setExpertListing,
@@ -26,10 +29,12 @@ import {
 } from '@/lib/market/client'
 
 import { MarketShell } from './market-shell'
-import { Badge, Field, inputClass, Price, Problem } from './parts'
+import { Badge, Field, inputClass, Price, Problem, Stars } from './parts'
+import { PublisherPanel } from './publisher'
 
 type Props = { csrfToken: string; account: React.ReactNode }
-type Tab = 'knowledge' | 'experts' | 'demands' | 'responses'
+const TABS = ['experts', 'knowledge', 'demands', 'responses', 'trades', 'owner'] as const
+type Tab = (typeof TABS)[number]
 
 const TONE: Record<string, 'muted' | 'ok' | 'warn' | 'bad'> = {
   draft: 'muted',
@@ -71,26 +76,122 @@ function Tabs<T extends string>({
   )
 }
 
-// 我发布的（SDD 0018 第十一节第 7 小节）：知识条目、专家的公开与价格、需求、响应
-export function MyPublished({ csrfToken, account }: Props) {
+// 我的小店（SDD 0018 第十一节第 7 之二小节，取代原来的「我发布的」「我买到的」「发布主体」）：
+// 供给（我的专家、我的知识）、需求（我的需求、我给别人的响应）、交易记录、店主资料
+export function MyShopScreen({ csrfToken, account }: Props) {
   const t = useTranslations('marketUi')
-  const [tab, setTab] = useState<Tab>('knowledge')
+  const [tab, setTab] = useState<Tab>('experts')
+  const shop = useQuery({ queryKey: ['market', 'my-shop'] as const, queryFn: fetchMyShop })
   return (
     <MarketShell account={account}>
       <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('mine.title')}</h1>
-        <Tabs
-          tabs={['knowledge', 'experts', 'demands', 'responses'] as const}
-          value={tab}
-          onChange={setTab}
-          label={(x) => t(`mine.${x}`)}
-        />
-        {tab === 'knowledge' ? <MyListings csrfToken={csrfToken} /> : null}
+        <ShopHead shop={shop.data} error={shop.error} />
+        <Tabs tabs={TABS} value={tab} onChange={setTab} label={(x) => t(`myShop.${x}`)} />
         {tab === 'experts' ? <MyExperts csrfToken={csrfToken} /> : null}
+        {tab === 'knowledge' ? <MyListings csrfToken={csrfToken} /> : null}
         {tab === 'demands' ? <MyDemands /> : null}
         {tab === 'responses' ? <MyResponses /> : null}
+        {tab === 'trades' ? <MyTrades csrfToken={csrfToken} /> : null}
+        {tab === 'owner' ? (
+          <div className="space-y-10">
+            {shop.data ? <ShopOwner csrfToken={csrfToken} shop={shop.data} /> : null}
+            <PublisherPanel csrfToken={csrfToken} />
+          </div>
+        ) : null}
       </div>
     </MarketShell>
+  )
+}
+
+// 店名、在不在首页列表上、处置状态
+function ShopHead({ shop, error }: { shop: MyShop | undefined; error: unknown }) {
+  const t = useTranslations('marketUi')
+  const locale = useLocale()
+  if (!shop) return <Problem error={error} />
+  return (
+    <header className="space-y-2">
+      <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">
+        {shop.shop.name}
+        {shop.shop.platform ? <Badge tone="ok">{t('shops.platform')}</Badge> : null}
+      </h1>
+      {shop.shop.status === 'suspended' ? (
+        <p role="alert" className="text-destructive text-sm">
+          {t('myShop.suspended', { note: shop.shop.status_note ?? '' })}
+        </p>
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          {t(shop.shop.listed ? 'myShop.listed' : 'myShop.notListed')}
+        </p>
+      )}
+      <p className="flex flex-wrap items-center gap-3 text-sm">
+        <Stars rating={shop.rating} />
+        <Link
+          href={`/${locale}/shops/${shop.shop.shop_id}`}
+          className="text-primary hover:underline"
+        >
+          {t('myShop.view')}
+        </Link>
+      </p>
+    </header>
+  )
+}
+
+// 店主资料：店名（默认昵称，可改、留痕，受驻场规则禁止词约束）与留痕；发布主体在下面
+function ShopOwner({ csrfToken, shop }: { csrfToken: string; shop: MyShop }) {
+  const t = useTranslations('marketUi')
+  const format = useFormatter()
+  const client = useQueryClient()
+  const [name, setName] = useState(shop.shop.name)
+  const rename = useMutation({
+    mutationFn: () => renameShop(csrfToken, name.trim()),
+    onSuccess: (saved) => client.setQueryData(['market', 'my-shop'], saved),
+  })
+  return (
+    <section className="space-y-4">
+      <form
+        className="flex flex-wrap items-end gap-2"
+        aria-label={t('myShop.rename')}
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (name.trim()) rename.mutate()
+        }}
+      >
+        <div className="min-w-64 flex-1">
+          <Field label={t('myShop.name')} hint={t('myShop.nameHint')}>
+            <input
+              className={inputClass}
+              maxLength={40}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Field>
+        </div>
+        <Button type="submit" size="sm" disabled={!name.trim() || rename.isPending}>
+          {t('myShop.rename')}
+        </Button>
+      </form>
+      <Problem error={rename.error} />
+      {shop.history.length > 0 ? (
+        <div className="space-y-1 text-sm">
+          <h2 className="font-semibold">{t('myShop.history')}</h2>
+          <ul className="text-muted-foreground space-y-1 text-xs">
+            {shop.history.map((event, index) => (
+              <li key={index}>
+                {event.at ? `${format.dateTime(new Date(event.at), { dateStyle: 'medium' })} ` : ''}
+                {event.kind === 'renamed'
+                  ? t('myShop.renamed', { old: event.old_name ?? '', new: event.new_name ?? '' })
+                  : t(
+                      event.kind === 'suspended' ? 'myShop.suspendedEvent' : 'myShop.restoredEvent',
+                      {
+                        note: event.note ?? '',
+                      },
+                    )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
   )
 }
 
@@ -130,7 +231,7 @@ function MyListings({ csrfToken }: { csrfToken: string }) {
         />
       ) : null}
       <Problem error={listings.error ?? submit.error ?? delist.error} />
-      <ul className="divide-y rounded-xl border" aria-label={t('mine.knowledge')}>
+      <ul className="divide-y rounded-xl border" aria-label={t('myShop.knowledge')}>
         {(listings.data?.items ?? []).map((item) => (
           <li key={item.listing_id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
             <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
@@ -361,7 +462,7 @@ function MyExperts({ csrfToken }: { csrfToken: string }) {
     <section className="space-y-3">
       <p className="text-muted-foreground text-sm">{t('mine.expertsLead')}</p>
       <Problem error={experts.error ?? save.error} />
-      <ul className="divide-y rounded-xl border" aria-label={t('mine.experts')}>
+      <ul className="divide-y rounded-xl border" aria-label={t('myShop.experts')}>
         {(experts.data?.items ?? []).map((bot) => {
           const price = prices[bot.knowbot_id] ?? bot.price ?? ''
           const category =
@@ -444,7 +545,7 @@ function MyDemands() {
   const locale = useLocale()
   const demands = useQuery({ queryKey: ['market', 'my-demands'] as const, queryFn: fetchMyDemands })
   return (
-    <ul className="divide-y rounded-xl border" aria-label={t('mine.demands')}>
+    <ul className="divide-y rounded-xl border" aria-label={t('myShop.demands')}>
       {(demands.data?.items ?? []).map((d) => (
         <li key={d.demand_id} className="flex items-center gap-3 px-4 py-3 text-sm">
           <Link
@@ -470,7 +571,7 @@ function MyResponses() {
     queryFn: fetchMyResponses,
   })
   return (
-    <ul className="divide-y rounded-xl border" aria-label={t('mine.responses')}>
+    <ul className="divide-y rounded-xl border" aria-label={t('myShop.responses')}>
       {(responses.data?.items ?? []).map((r) => (
         <li key={r.response_id} className="flex items-center gap-3 px-4 py-3 text-sm">
           <Link
@@ -488,8 +589,9 @@ function MyResponses() {
   )
 }
 
-// 我买到的、我卖出的：成交记录；买家评分，卖家回复一次
-export function MyTrades({ csrfToken, account }: Props) {
+// 交易记录：买入的、卖出的；每行带直达链接（知识去 knowbase，专家去 knowbench）、条目现在的
+// 状态；买家评分，卖家回复一次（SDD 0018 第十一节第 7 之二小节）
+function MyTrades({ csrfToken }: { csrfToken: string }) {
   const t = useTranslations('marketUi')
   const client = useQueryClient()
   const [role, setRole] = useState<'buyer' | 'seller'>('buyer')
@@ -510,112 +612,109 @@ export function MyTrades({ csrfToken, account }: Props) {
     onSuccess: changed,
   })
   return (
-    <MarketShell account={account}>
-      <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('bought.title')}</h1>
-        <Tabs
-          tabs={['buyer', 'seller'] as const}
-          value={role}
-          onChange={setRole}
-          label={(x) => t(`bought.${x}`)}
-        />
-        <Problem error={trades.error ?? review.error ?? reply.error} />
-        {trades.data && trades.data.items.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t('bought.empty')}</p>
-        ) : null}
-        <ul className="space-y-3" aria-label={t(`bought.${role}`)}>
-          {(trades.data?.items ?? []).map((trade) => {
-            const draft = drafts[trade.trade_id] ?? { rating: 5, text: '' }
-            return (
-              <li key={trade.trade_id} className="space-y-2 rounded-xl border p-4 text-sm">
-                <p className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{trade.title}</span>
-                  <Badge>{t(`kind.${trade.kind}`)}</Badge>
-                  <Price value={trade.price} />
-                  {trade.target_app ? (
-                    <span className="text-muted-foreground text-xs">
-                      {t('bought.into', { place: t(`place.${trade.target_app}`) })}
-                    </span>
-                  ) : null}
-                  {trade.status === 'failed' ? (
-                    <span className="text-destructive text-xs">
-                      {t(
-                        trade.failure === 'item_not_for_sale'
-                          ? 'bought.notForSale'
-                          : 'bought.failed',
-                      )}
-                    </span>
-                  ) : null}
-                </p>
-                {trade.review ? (
-                  <div className="text-muted-foreground">
-                    <p>
-                      {t('stars', { rating: trade.review.rating })} {trade.review.text}
+    <section className="space-y-4">
+      <Tabs
+        tabs={['buyer', 'seller'] as const}
+        value={role}
+        onChange={setRole}
+        label={(x) => t(`bought.${x}`)}
+      />
+      <Problem error={trades.error ?? review.error ?? reply.error} />
+      {trades.data && trades.data.items.length === 0 ? (
+        <p className="text-muted-foreground text-sm">{t('bought.empty')}</p>
+      ) : null}
+      <ul className="space-y-3" aria-label={t(`bought.${role}`)}>
+        {(trades.data?.items ?? []).map((trade) => {
+          const draft = drafts[trade.trade_id] ?? { rating: 5, text: '' }
+          return (
+            <li key={trade.trade_id} className="space-y-2 rounded-xl border p-4 text-sm">
+              <p className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">{trade.title}</span>
+                <Badge>{t(`kind.${trade.kind}`)}</Badge>
+                <Price value={trade.price} />
+                {trade.target_app ? (
+                  <span className="text-muted-foreground text-xs">
+                    {t('bought.into', { place: t(`place.${trade.target_app}`) })}
+                  </span>
+                ) : null}
+                <TradeState trade={trade} role={role} />
+                {trade.status === 'failed' ? (
+                  <span className="text-destructive text-xs">
+                    {t(
+                      trade.failure === 'item_not_for_sale' ? 'bought.notForSale' : 'bought.failed',
+                    )}
+                  </span>
+                ) : null}
+              </p>
+              <TradeLinks trade={trade} role={role} />
+              {trade.review ? (
+                <div className="text-muted-foreground">
+                  <p>
+                    {t('stars', { rating: trade.review.rating })} {trade.review.text}
+                  </p>
+                  {trade.review.reply ? (
+                    <p className="border-l-2 pl-2">
+                      {t('sellerReply', { reply: trade.review.reply })}
                     </p>
-                    {trade.review.reply ? (
-                      <p className="border-l-2 pl-2">
-                        {t('sellerReply', { reply: trade.review.reply })}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : null}
-                {role === 'buyer' && !trade.review ? (
-                  <form
-                    className="flex flex-wrap items-end gap-2"
-                    aria-label={t('bought.review')}
-                    onSubmit={(event) => {
-                      event.preventDefault()
-                      review.mutate({ id: trade.trade_id, ...draft })
-                    }}
-                  >
-                    <Field label={t('bought.rating')}>
-                      <select
-                        className={`${inputClass} w-20`}
-                        value={draft.rating}
-                        onChange={(e) =>
-                          setDrafts({
-                            ...drafts,
-                            [trade.trade_id]: { ...draft, rating: Number(e.target.value) },
-                          })
-                        }
-                      >
-                        {[5, 4, 3, 2, 1].map((n) => (
-                          <option key={n} value={n}>
-                            {n}
-                          </option>
-                        ))}
-                      </select>
-                    </Field>
-                    <Field label={t('bought.words')}>
-                      <input
-                        className={inputClass}
-                        maxLength={1000}
-                        value={draft.text}
-                        onChange={(e) =>
-                          setDrafts({
-                            ...drafts,
-                            [trade.trade_id]: { ...draft, text: e.target.value },
-                          })
-                        }
-                      />
-                    </Field>
-                    <Button type="submit" size="sm" disabled={review.isPending}>
-                      {t('bought.sendReview')}
-                    </Button>
-                  </form>
-                ) : null}
-                {role === 'seller' && trade.review && !trade.review.reply ? (
-                  <ReplyForm
-                    onSend={(text) => reply.mutate({ id: trade.trade_id, reply: text })}
-                    busy={reply.isPending}
-                  />
-                ) : null}
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-    </MarketShell>
+                  ) : null}
+                </div>
+              ) : null}
+              {role === 'buyer' && !trade.review ? (
+                <form
+                  className="flex flex-wrap items-end gap-2"
+                  aria-label={t('bought.review')}
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    review.mutate({ id: trade.trade_id, ...draft })
+                  }}
+                >
+                  <Field label={t('bought.rating')}>
+                    <select
+                      className={`${inputClass} w-20`}
+                      value={draft.rating}
+                      onChange={(e) =>
+                        setDrafts({
+                          ...drafts,
+                          [trade.trade_id]: { ...draft, rating: Number(e.target.value) },
+                        })
+                      }
+                    >
+                      {[5, 4, 3, 2, 1].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label={t('bought.words')}>
+                    <input
+                      className={inputClass}
+                      maxLength={1000}
+                      value={draft.text}
+                      onChange={(e) =>
+                        setDrafts({
+                          ...drafts,
+                          [trade.trade_id]: { ...draft, text: e.target.value },
+                        })
+                      }
+                    />
+                  </Field>
+                  <Button type="submit" size="sm" disabled={review.isPending}>
+                    {t('bought.sendReview')}
+                  </Button>
+                </form>
+              ) : null}
+              {role === 'seller' && trade.review && !trade.review.reply ? (
+                <ReplyForm
+                  onSend={(text) => reply.mutate({ id: trade.trade_id, reply: text })}
+                  busy={reply.isPending}
+                />
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
 
@@ -642,5 +741,92 @@ function ReplyForm({ onSend, busy }: { onSend: (text: string) => void; busy: boo
         {t('bought.sendReply')}
       </Button>
     </form>
+  )
+}
+
+// 条目现在的状态：知识在架 / 已下架；专家这一版别人还请不请得到（已下架的标「不可请」）
+function TradeState({ trade, role }: { trade: Trade; role: 'buyer' | 'seller' }) {
+  const t = useTranslations('marketUi')
+  return (
+    <>
+      {trade.listing_state ? (
+        <Badge tone={trade.listing_state === 'on' ? 'ok' : 'muted'}>
+          {t(
+            trade.listing_state === 'on'
+              ? 'bought.on'
+              : trade.kind === 'expert'
+                ? 'bought.expertOff'
+                : 'bought.off',
+          )}
+        </Badge>
+      ) : null}
+      {trade.seller_publisher ? (
+        <span className="text-muted-foreground text-xs">
+          {t('bought.soldAs', { name: trade.seller_publisher.name })}
+        </span>
+      ) : null}
+      {role === 'buyer' ? <ShopLinkInline trade={trade} /> : null}
+    </>
+  )
+}
+
+function ShopLinkInline({ trade }: { trade: Trade }) {
+  const t = useTranslations('marketUi')
+  const locale = useLocale()
+  if (!trade.shop) return null
+  return (
+    <Link
+      href={`/${locale}/shops/${trade.shop.shop_id}`}
+      className="text-primary text-xs hover:underline"
+    >
+      {t('shops.sellerShop', { name: trade.shop.name })}
+    </Link>
+  )
+}
+
+// 直达链接：买来的知识在 knowbase 总栏「买来的」，卖出的在卖家自己的 knowbase；请过的专家在
+// knowbench「专家」照旧能请，卖出的专家看 knowmart 里的详情（目标应用没配就不显示）
+function TradeLinks({ trade, role }: { trade: Trade; role: 'buyer' | 'seller' }) {
+  const t = useTranslations('marketUi')
+  const locale = useLocale()
+  if (trade.kind === 'expert') {
+    if (role === 'seller') {
+      return (
+        <Link
+          href={`/${locale}/knowbots/${trade.listing_ref.split('@')[0]}`}
+          className="text-primary text-xs hover:underline"
+        >
+          {t('bought.openOwnExpert')}
+        </Link>
+      )
+    }
+    return (
+      <CrossAppLink to="knowbench.experts" className="text-primary text-xs hover:underline">
+        {t('bought.openExpert')}
+      </CrossAppLink>
+    )
+  }
+  const files = trade.granted.filter((item) => item.item_id)
+  if (files.length === 0) return null
+  return (
+    <ul className="space-y-1 text-xs">
+      {files.map((item) => (
+        <li key={item.item_id}>
+          <CrossAppLink
+            to="knowbase.library"
+            values={{
+              category: role === 'buyer' ? 'purchased' : 'uploaded',
+              material: item.item_id,
+            }}
+            className="text-primary hover:underline"
+          >
+            {item.name ?? item.item_id}
+          </CrossAppLink>{' '}
+          <span className="text-muted-foreground">
+            {t(role === 'buyer' ? 'bought.openPurchased' : 'bought.openUploaded')}
+          </span>
+        </li>
+      ))}
+    </ul>
   )
 }

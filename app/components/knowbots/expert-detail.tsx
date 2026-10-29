@@ -8,7 +8,7 @@ import { useState } from 'react'
 
 import { CrossAppLink } from '@/components/common/cross-app-link'
 import { MarketNav } from '@/components/market/market-shell'
-import { Price, Reviews, Stars } from '@/components/market/parts'
+import { Price, Reviews, ShopLink, Stars } from '@/components/market/parts'
 import { Button } from '@/components/ui/button'
 import type { ExpertDetail as Detail } from '@/contracts/experts'
 import { useCrossAppOrigin } from '@/lib/cross-app/use-cross-app'
@@ -120,7 +120,7 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
   )
 }
 
-// 市场部分（SDD 0018 第十一节）：每次请的价格、评价
+// 市场部分（SDD 0018 第十一节）：每次请的价格、评价、在哪家小店（第 7 之二小节）
 function MarketPart({ knowbotId }: { knowbotId: string }) {
   const t = useTranslations('marketUi')
   const market = useQuery({
@@ -134,6 +134,7 @@ function MarketPart({ knowbotId }: { knowbotId: string }) {
       <p className="flex flex-wrap items-center gap-3 text-sm">
         <Price value={market.data.price} />
         <Stars rating={market.data.rating} />
+        <ShopLink shop={market.data.shop} />
       </p>
       <Reviews reviews={market.data.reviews} />
     </section>

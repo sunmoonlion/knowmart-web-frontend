@@ -1,11 +1,12 @@
 'use client'
 
 import { useMutation } from '@tanstack/react-query'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useFormatter, useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import type { Review } from '@/contracts/market'
+import type { Review, ShopRef } from '@/contracts/market'
 import { problemCode, report } from '@/lib/market/client'
 import { cn } from '@/lib/utils'
 
@@ -70,6 +71,27 @@ export function Badge({
     >
       {children}
     </span>
+  )
+}
+
+// 链到一家小店（SDD 0018 第十一节第 7 之二小节：跨店找到的落到对应小店）
+export function ShopLink({
+  shop,
+  label = 'shops.of',
+}: {
+  shop: ShopRef | null | undefined
+  label?: 'shops.of' | 'shops.buyerShop' | 'shops.sellerShop'
+}) {
+  const t = useTranslations('marketUi')
+  const locale = useLocale()
+  if (!shop) return null
+  return (
+    <Link
+      href={`/${locale}/shops/${shop.shop_id}`}
+      className="text-primary text-xs hover:underline"
+    >
+      {t(label, { name: shop.name })}
+    </Link>
   )
 }
 

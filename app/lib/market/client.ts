@@ -15,10 +15,13 @@ import {
   materialSchema,
   messageSchema,
   myPublisherSchema,
+  myShopSchema,
   pageOf,
   responseSchema,
   reviewSchema,
   rulesSchema,
+  shopCardSchema,
+  shopPageSchema,
   tradeSchema,
 } from '@/contracts/market'
 import { ApiClientError, requestJson } from '@/lib/common/api-client'
@@ -47,6 +50,19 @@ function query(params: Record<string, string | number | null | undefined>): stri
   }
   return found.size ? `?${found}` : ''
 }
+
+// ---------- 小店（SDD 0018 第十一节第 7 之二小节）----------
+// 首页：有在架供给或公开需求的店；只按时间或店名排
+export const fetchShops = (params: {
+  q?: string
+  category?: string | null
+  sort?: 'time' | 'name'
+  page?: number
+}) => get(pageOf(shopCardSchema), `/shops${query(params)}`)
+export const fetchShop = (id: string) => get(shopPageSchema, `/shops/${seg(id)}`)
+export const fetchMyShop = () => get(myShopSchema, '/shop')
+export const renameShop = (csrfToken: string, name: string) =>
+  send(myShopSchema, '/shop', csrfToken, { name }, 'PUT')
 
 // ---------- 驻场规则、举报 ----------
 export const fetchRules = () => get(rulesSchema, '/rules')
@@ -176,6 +192,8 @@ export type DemandForm = {
   data_wanted: string
   deadline: string
   budget: string | null
+  // 「公开到我的小店」：默认不勾；不勾照样匿名进需求大厅
+  public_to_shop: boolean
 }
 export const fetchDemandHall = (params: { kind?: string | null; q?: string; page?: number }) =>
   get(pageOf(demandSchema), `/demands${query(params)}`)

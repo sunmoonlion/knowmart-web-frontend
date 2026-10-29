@@ -22,7 +22,7 @@ import {
 } from '@/lib/market/client'
 
 import { MarketShell } from './market-shell'
-import { Badge, Field, inputClass, Pager, Price, Problem, ReportButton } from './parts'
+import { Badge, Field, inputClass, Pager, Price, Problem, ReportButton, ShopLink } from './parts'
 
 type Props = { csrfToken: string; account: React.ReactNode }
 
@@ -132,6 +132,7 @@ function DemandEditor({ csrfToken, onDone }: { csrfToken: string; onDone: () => 
     data_wanted: '',
     deadline: '',
     budget: null,
+    public_to_shop: false,
   })
   const save = useMutation({ mutationFn: () => createDemand(csrfToken, form), onSuccess: onDone })
   const ready = form.title.trim() && form.problem.trim() && form.deadline
@@ -201,6 +202,21 @@ function DemandEditor({ csrfToken, onDone }: { csrfToken: string; onDone: () => 
           />
         </Field>
       </div>
+      {/* 「公开到我的小店」默认不勾（SDD 0018 第十一节第 7 之二小节，所有者 10-26） */}
+      <label className="flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          className="mt-1"
+          checked={form.public_to_shop}
+          onChange={(e) => setForm({ ...form, public_to_shop: e.target.checked })}
+        />
+        <span>
+          {t('demands.publicToShop')}
+          <span className="text-muted-foreground block text-xs">
+            {t('demands.publicToShopHint')}
+          </span>
+        </span>
+      </label>
       <Button type="submit" size="sm" disabled={!ready || save.isPending}>
         {save.isPending ? t('working') : t('demands.publish')}
       </Button>
@@ -246,6 +262,8 @@ export function DemandScreen({ csrfToken, account, demandId }: Props & { demandI
                     })}
                   </span>
                 ) : null}
+                {/* 需求在大厅里匿名：响应了的卖家才见到买家的店 */}
+                {!d.mine ? <ShopLink shop={d.shop} label="shops.buyerShop" /> : null}
               </p>
             </header>
             <section className="space-y-1 text-sm">
@@ -349,6 +367,7 @@ function ResponseCard({
           </span>
         ) : null}
         {response.mine ? <Badge tone="ok">{t('yours')}</Badge> : null}
+        {demand.mine ? <ShopLink shop={response.shop} label="shops.sellerShop" /> : null}
       </p>
       <p className="whitespace-pre-wrap">{response.proposal}</p>
       {offered ? (
