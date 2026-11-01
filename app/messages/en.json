@@ -156,6 +156,7 @@
     "deliverFile": "Deliverable file: {file}",
     "deliverResult": "Returns the result of this step",
     "active": "Available",
+    "held": "On hold (bound data no longer valid; others cannot ask it)",
     "stopped": "Stopped",
     "stop": "Stop",
     "stopFailed": "Could not stop it. Try again.",
@@ -243,6 +244,13 @@
     "edit": "Edit",
     "save": "Save",
     "reviewNote": "Review note: {note}",
+    "held": "Version {version} is on hold and others cannot ask it now: {reason}. It comes back by itself once you sort it out in knowbase; to change the data, make a new version in knowlab.",
+    "heldReason": {
+      "binding_gone": "a piece of data you bound to this expert is no longer available to you",
+      "binding_disabled": "a piece of data you bound to this expert was disabled by the platform",
+      "binding_deleted": "a piece of data you bound to this expert was deleted",
+      "binding_not_shareable": "a piece of data you bound to this expert is now licensed for your use only"
+    },
     "rulesVersion": "Version {version}",
     "rulesTitle": "House rules",
     "place": {

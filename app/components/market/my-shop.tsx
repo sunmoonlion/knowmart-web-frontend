@@ -482,6 +482,18 @@ function MyExperts({ csrfToken }: { csrfToken: string }) {
                   {t('reviewNote', { note: bot.review_note })}
                 </p>
               ) : null}
+              {/* 待处理：在售那一版所绑的数据失效（删、禁用、许可改低），别人请不了；
+                  数据好了自动恢复（0043 第 4.3 节；数据拓扑第十节第 5 条） */}
+              {bot.held.map((h) => (
+                <p key={h.version} className="text-destructive text-xs" role="status">
+                  {t('held', {
+                    version: h.version,
+                    reason: t.has(`heldReason.${h.reason}`)
+                      ? t(`heldReason.${h.reason}`)
+                      : h.reason,
+                  })}
+                </p>
+              ))}
               <div className="flex flex-wrap items-end gap-2">
                 <Field label={t('mine.pricePerAsk')}>
                   <input

@@ -199,7 +199,7 @@ function Body({
               {expert.versions.map((v) => (
                 <option key={v.version} value={v.version}>
                   {t('version', { version: v.version })}
-                  {v.status === 'stopped' ? ` · ${t('stopped')}` : ''}
+                  {v.status === 'active' ? '' : ` · ${t(v.status)}`}
                 </option>
               ))}
             </select>
@@ -322,7 +322,7 @@ function Body({
                     {t('version', { version: row.v.version })}
                     <span className="text-muted-foreground">
                       {' · '}
-                      {t(row.v.status === 'active' ? 'active' : 'stopped')}
+                      {t(row.v.status)}
                       {' · '}
                       {t('deliveredAt', { date: date(row.v.delivered_at) })}
                     </span>

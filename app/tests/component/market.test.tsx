@@ -336,6 +336,7 @@ describe('供需市场', () => {
           price: null,
           review_note: null,
           category: { code: 'tools.office', name: '办公' },
+          held: [],
         },
       ],
     })
@@ -365,6 +366,7 @@ describe('供需市场', () => {
           price: null,
           review_note: null,
           category: { code: 'uncategorized', name: '未分类' },
+          held: [],
         },
       ],
     })
@@ -382,6 +384,29 @@ describe('供需市场', () => {
         category: 'tools.lookup',
       }),
     )
+  })
+
+  it('我的小店：所绑数据失效的那一版待处理，写明原因（0043 第 4.3 节）', async () => {
+    vi.mocked(client.fetchMyListings).mockResolvedValue({ items: [] })
+    vi.mocked(client.fetchMyExperts).mockResolvedValue({
+      items: [
+        {
+          knowbot_id: 'k3',
+          name: '财务分析与预测',
+          visibility: 'public',
+          listing_status: 'public',
+          price: null,
+          review_note: null,
+          category: { code: 'tools.lookup', name: '信息查询' },
+          held: [{ version: '2', reason: 'binding_deleted', at: '2026-10-30T00:00:00Z' }],
+        },
+      ],
+    })
+    page(<MyShopScreen csrfToken={CSRF} account={null} />)
+    fireEvent.click(screen.getByRole('tab', { name: '我的专家' }))
+    expect(
+      await screen.findByText(/第 2 版待处理，别人现在请不了：你绑给这位专家的数据有一份删了/),
+    ).toBeInTheDocument()
   })
 
   it('交易记录：买家评分；请过的专家直达 knowbench，已下架的标不可请', async () => {

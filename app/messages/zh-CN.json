@@ -156,6 +156,7 @@
     "deliverFile": "成稿文件：{file}",
     "deliverResult": "交回这一步的结果",
     "active": "可用",
+    "held": "待处理（所绑数据失效，别人请不了）",
     "stopped": "已停用",
     "stop": "停用",
     "stopFailed": "停用失败，请再试一次。",
@@ -243,6 +244,13 @@
     "edit": "改",
     "save": "保存",
     "reviewNote": "审核说明：{note}",
+    "held": "第 {version} 版待处理，别人现在请不了：{reason}。你在 knowbase 处理好后会自动恢复；要换数据请在 knowlab 出新一版。",
+    "heldReason": {
+      "binding_gone": "你绑给这位专家的数据有一份你已经用不了",
+      "binding_disabled": "你绑给这位专家的数据有一份被平台禁用",
+      "binding_deleted": "你绑给这位专家的数据有一份删了",
+      "binding_not_shareable": "你绑给这位专家的数据有一份许可改成了「只许本人用」"
+    },
     "rulesVersion": "第 {version} 版",
     "rulesTitle": "驻场规则",
     "place": {

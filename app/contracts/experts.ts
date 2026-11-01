@@ -74,8 +74,10 @@ export const expertDetailSchema = z
           z
             .object({
               version: z.string().regex(/^[1-9][0-9]{0,5}$/),
-              status: z.enum(['active', 'stopped']),
+              // held：待处理，所绑数据失效、别人请不了（0043 第 4.3 节）；原因只给主人
+              status: z.enum(['active', 'held', 'stopped']),
               delivered_at: z.string().min(1),
+              held_reason: z.string().nullable().optional(),
             })
             .strict(),
         ),

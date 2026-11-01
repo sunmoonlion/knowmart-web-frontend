@@ -128,6 +128,14 @@ export const fetchMyExperts = () =>
     itemsOf(
       expertListingSchema.extend({
         category: z.object({ code: z.string(), name: z.string() }).loose(),
+        // 待处理的那几版：所绑数据失效，别人请不了（0043 第 4.3 节）
+        held: z
+          .array(
+            z
+              .object({ version: z.string(), reason: z.string(), at: z.string().nullable() })
+              .loose(),
+          )
+          .default([]),
       }),
     ),
     '/experts/mine',
