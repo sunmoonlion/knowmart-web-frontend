@@ -196,6 +196,30 @@ describe('专家目录首页', () => {
     fireEvent.click(screen.getByRole('button', { name: '展开类目' }))
     expect(screen.getByRole('button', { name: /证券 \/ 期货投资咨询\s*1/ })).toBeInTheDocument()
   })
+
+  it('展示 20 个财务与估值专家演示占位卡片，点击可查看能力说明模态框', async () => {
+    page(<ExpertCatalog csrfToken={CSRF} account={null} />)
+    await screen.findByText('财务分析与预测')
+    // 验证占位卡片出现在页面中
+    expect(screen.getByText('M01 财务三表标准化重构专家')).toBeInTheDocument()
+    expect(screen.getByText('M04 杜邦五步连乘归因分解专家')).toBeInTheDocument()
+    expect(screen.getByText('M14 自由现金流折现(DCF)绝对估值专家')).toBeInTheDocument()
+    expect(screen.getByText('M20 研报级财务底稿与成稿编排专家')).toBeInTheDocument()
+
+    // 共有 20 个演示占位标签
+    const demoBadges = screen.getAllByText('演示占位')
+    expect(demoBadges.length).toBeGreaterThanOrEqual(20)
+
+    // 点击其中一个演示占位卡片，弹出模态说明框
+    fireEvent.click(screen.getByRole('button', { name: 'M04 杜邦五步连乘归因分解专家' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText('dupont_five_way_decomposition')).toBeInTheDocument()
+    expect(screen.getByText(/五因子连乘体系深入剖析/)).toBeInTheDocument()
+
+    // 点击确定关闭
+    fireEvent.click(screen.getByRole('button', { name: '确定' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
 })
 
 describe('专家详情', () => {
