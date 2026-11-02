@@ -208,17 +208,59 @@ describe('专家目录首页', () => {
 
     // 共有 20 个演示占位标签
     const demoBadges = screen.getAllByText('演示占位')
-    expect(demoBadges.length).toBeGreaterThanOrEqual(20)
+    expect(demoBadges).toHaveLength(20)
 
     // 点击其中一个演示占位卡片，弹出模态说明框
     fireEvent.click(screen.getByRole('button', { name: 'M04 杜邦五步连乘归因分解专家' }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('dupont_five_way_decomposition')).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'M04 杜邦五步连乘归因分解专家' })).toBeInTheDocument()
+    expect(summonReturnUrl).not.toHaveBeenCalled()
+    expect(fetchExpert).not.toHaveBeenCalled()
+    expect(fetchExperts).toHaveBeenCalledTimes(1)
+    expect(leaveTo).not.toHaveBeenCalled()
     expect(screen.getByText(/五因子连乘体系深入剖析/)).toBeInTheDocument()
 
     // 点击确定关闭
-    fireEvent.click(screen.getByRole('button', { name: '确定' }))
-    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '关闭' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  })
+  it('只命中占位的搜索仍展示结果，且不虚增真实专家数量', async () => {
+    nav.search = 'q=杜邦'
+    vi.mocked(fetchExperts).mockResolvedValue({ ...list, items: [], total: 0 })
+    page(<ExpertCatalog csrfToken={CSRF} account={null} />)
+    expect(await screen.findByText('M04 杜邦五步连乘归因分解专家')).toBeInTheDocument()
+    expect(screen.queryByText('M14 自由现金流折现(DCF)绝对估值专家')).toBeNull()
+    expect(screen.getByText(/仅展示方法方向，暂不可委托/)).toBeInTheDocument()
+  })
+
+  it.each(['page=2', 'updated=7d', 'category=education'])(
+    '占位不混入分页、发布日期或无关分类：%s',
+    async (query) => {
+      nav.search = query
+      page(<ExpertCatalog csrfToken={CSRF} account={null} />)
+      await screen.findByText('财务分析与预测')
+      expect(screen.queryByText('演示占位')).toBeNull()
+    },
+  )
+
+  it('真实金融二级类目可见占位；工作台入口不能委托占位；Escape 可关闭', async () => {
+    nav.search = 'category=finance.securities_advisory&from=knowbench&ref=expert'
+    origin.data = { app: 'knowbench', ref: 'expert', return_url: 'https://knowbench.example' }
+    page(<ExpertCatalog csrfToken={CSRF} account={null} />)
+    const trigger = await screen.findByRole('button', { name: 'M04 杜邦五步连乘归因分解专家' })
+    const card = trigger.closest('article')!
+    expect(within(card).queryByRole('link')).toBeNull()
+    expect(within(card).queryByRole('button', { name: '请这位' })).toBeNull()
+    trigger.focus()
+    fireEvent.click(trigger)
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('此卡片仅用于展示，尚未开放委托。')).toBeInTheDocument()
+    fireEvent.keyDown(dialog, { key: 'Escape' })
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    await waitFor(() => expect(trigger).toHaveFocus())
+    expect(summonReturnUrl).not.toHaveBeenCalled()
+    expect(fetchExpert).not.toHaveBeenCalled()
+    expect(fetchExperts).toHaveBeenCalledTimes(1)
   })
 })
 

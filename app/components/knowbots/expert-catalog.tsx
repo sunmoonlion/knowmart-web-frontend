@@ -1,12 +1,13 @@
 'use client'
 
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { PanelLeftCloseIcon, PanelLeftOpenIcon, XIcon, InfoIcon } from 'lucide-react'
+import { PanelLeftCloseIcon, PanelLeftOpenIcon, XIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
 
+import { DemoExpertGallery } from '@/components/knowbots/demo-expert-gallery'
 import { CrossAppLink } from '@/components/common/cross-app-link'
 import { MarketNav } from '@/components/market/market-shell'
 import { Button } from '@/components/ui/button'
@@ -22,10 +23,6 @@ import {
 import { summonReturnUrl } from '@/lib/knowbots/client'
 import { leaveTo } from '@/lib/leave-to'
 import { cn } from '@/lib/utils'
-import {
-  DEMO_EXPERT_PLACEHOLDERS,
-  type DemoExpertPlaceholder,
-} from '@/components/knowbots/demo-expert-placeholders'
 
 const COLLAPSED_KEY = 'knowmart.catalog.collapsed'
 const COLLAPSED_EVENT = 'knowmart:catalog-collapsed'
@@ -69,7 +66,6 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
   const [failed, setFailed] = useState<string | null>(null)
   const collapsed = useSyncExternalStore(watchCollapsed, readCollapsed, () => false)
   const [words, setWords] = useState(filters.q)
-  const [selectedDemo, setSelectedDemo] = useState<DemoExpertPlaceholder | null>(null)
 
   const go = (next: Partial<CatalogFilters>) => {
     // 换了条件就回到第一页，除非这次换的就是页码
@@ -102,27 +98,6 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
     const value = search.get(key)
     if (value !== null) detailQuery.set(key, value)
   }
-
-  // 融合纯前端演示占位专家列表（不调用后端）
-  const actualItems = list.data?.items ?? []
-  const filteredPlaceholders = DEMO_EXPERT_PLACEHOLDERS.filter((p) => {
-    if (filters.q.trim()) {
-      const query = filters.q.trim().toLowerCase()
-      const hit =
-        p.name.toLowerCase().includes(query) ||
-        p.tagline.toLowerCase().includes(query) ||
-        p.category.name.toLowerCase().includes(query) ||
-        p.details.toLowerCase().includes(query)
-      if (!hit) return false
-    }
-    if (filters.category) {
-      if (filters.category === p.category.group) return true
-      if (filters.category === p.category.code) return true
-      return false
-    }
-    return true
-  })
-  const displayItems = actualItems.length > 0 ? [...actualItems, ...filteredPlaceholders] : []
 
   return (
     <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">
@@ -291,7 +266,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
             <p className="text-destructive" role="alert">
               {t('loadFailed')}
             </p>
-          ) : displayItems.length === 0 ? (
+          ) : list.data.total === 0 ? (
             chips.length > 0 ? (
               <p className="text-muted-foreground">{t('noMatch')}</p>
             ) : (
@@ -300,7 +275,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
           ) : (
             <>
               <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {displayItems.map((item) => (
+                {list.data.items.map((item) => (
                   <li key={item.knowbot_id}>
                     <ExpertCard
                       item={item}
@@ -311,7 +286,6 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
                         setFailed(null)
                         summon.mutate({ knowbotId: item.knowbot_id, version: item.version })
                       }}
-                      onShowPlaceholder={(demo) => setSelectedDemo(demo)}
                     />
                   </li>
                 ))}
@@ -324,69 +298,9 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
               />
             </>
           )}
+          {list.isSuccess ? <DemoExpertGallery filters={filters} /> : null}
         </main>
       </div>
-
-      {/* 纯前端演示占位专家详情模态框 */}
-      {selectedDemo ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setSelectedDemo(null)}
-        >
-          <div
-            className="bg-background relative w-full max-w-lg rounded-lg border p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4 border-b pb-3">
-              <div>
-                <h3 className="text-lg font-bold">{selectedDemo.name}</h3>
-                <p className="text-muted-foreground text-xs mt-1">
-                  {selectedDemo.category.group_name} · {selectedDemo.category.name} · 第 {selectedDemo.version} 版 · 演示占位
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedDemo(null)}
-                className="text-muted-foreground hover:text-foreground p-1"
-                aria-label="关闭"
-              >
-                <XIcon className="size-5" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-3 text-sm">
-              <div>
-                <span className="font-semibold text-foreground">一句话介绍：</span>
-                <p className="text-muted-foreground mt-1">{selectedDemo.tagline}</p>
-              </div>
-              <div>
-                <span className="font-semibold text-foreground">核心分析方法：</span>
-                <code className="bg-muted block mt-1 rounded px-2 py-1 text-xs font-mono">
-                  {selectedDemo.methodId}
-                </code>
-              </div>
-              <div>
-                <span className="font-semibold text-foreground">功能定位与说明：</span>
-                <p className="text-muted-foreground mt-1 leading-relaxed">
-                  {selectedDemo.details}
-                </p>
-              </div>
-              <div className="bg-muted/50 rounded-md p-3 border text-xs text-muted-foreground flex items-center gap-2">
-                <InfoIcon className="size-4 shrink-0 text-primary" />
-                <span>此专家卡片为前端演示占位形态，仅用于演示视觉效果，不涉及后端调用。</span>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <Button onClick={() => setSelectedDemo(null)} size="sm">
-                确定
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -453,51 +367,28 @@ function ExpertCard({
   summoning,
   busy,
   onSummon,
-  onShowPlaceholder,
 }: {
-  item: ExpertItem | DemoExpertPlaceholder
+  item: ExpertItem
   href: string
   summoning: boolean
   busy: boolean
   onSummon: () => void
-  onShowPlaceholder?: (demo: DemoExpertPlaceholder) => void
 }) {
   const t = useTranslations('experts')
-  const isPlaceholder = 'isPlaceholder' in item && Boolean(item.isPlaceholder)
-
   return (
     // 整张卡片都能点进详情（qwen-006 走查：只点得动标题）：标题链接铺满卡片，按钮浮在上层
     <article className="hover:border-primary/60 relative flex h-full flex-col gap-2 rounded-lg border p-4">
-      <div className="flex items-start justify-between gap-2">
-        <h2 className="font-semibold text-base">
-          {isPlaceholder ? (
-            <button
-              type="button"
-              onClick={() => onShowPlaceholder?.(item as DemoExpertPlaceholder)}
-              className="text-left font-semibold hover:underline after:absolute after:inset-0"
-            >
-              {item.name}
-            </button>
-          ) : (
-            <Link href={href} className="after:absolute after:inset-0 hover:underline">
-              {item.name}
-            </Link>
-          )}
-        </h2>
-        {isPlaceholder && (
-          <span className="relative z-10 shrink-0 rounded bg-muted/80 border px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
-            演示占位
-          </span>
-        )}
-      </div>
+      <h2 className="font-semibold">
+        <Link href={href} className="after:absolute after:inset-0 hover:underline">
+          {item.name}
+        </Link>
+      </h2>
       {item.tagline ? <p className="text-sm">{item.tagline}</p> : null}
       <p className="text-muted-foreground text-xs tabular-nums">
         {item.category.name} · {t('version', { version: item.version })}
       </p>
-      <div className="relative z-10 mt-auto pt-1 flex items-center justify-between">
-        {isPlaceholder ? (
-          <span className="text-muted-foreground text-xs">（演示占位）</span>
-        ) : summoning ? (
+      <div className="relative z-10 mt-auto pt-1">
+        {summoning ? (
           item.summonable ? (
             <Button size="sm" disabled={busy} onClick={onSummon}>
               {t('summon')}

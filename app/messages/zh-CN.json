@@ -175,7 +175,12 @@
       "unknown": "没有上架"
     },
     "stopInKnowlab": "到 knowlab 的「专家」里停用",
-    "stopInKnowlabLink": "到 knowlab 停用"
+    "stopInKnowlabLink": "到 knowlab 停用",
+    "demoGallery": "专家方向演示",
+    "demoNotice": "以下 {count} 张卡片仅展示方法方向，暂不可委托；不计入在用专家数量和分页。",
+    "demoBadge": "演示占位",
+    "demoUnavailable": "此卡片仅用于展示，尚未开放委托。",
+    "demoClose": "关闭"
   },
   "market": {
     "brand": "knowmart",

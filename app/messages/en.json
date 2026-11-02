@@ -175,7 +175,12 @@
       "unknown": "Not listed"
     },
     "stopInKnowlab": "Stop it under Experts in knowlab",
-    "stopInKnowlabLink": "Stop in knowlab"
+    "stopInKnowlabLink": "Stop in knowlab",
+    "demoGallery": "Expert concepts",
+    "demoNotice": "These {count} cards illustrate method concepts only. They cannot be commissioned and are excluded from the live expert count and pagination.",
+    "demoBadge": "Demo only",
+    "demoUnavailable": "This is a display example. It is not available for commissioning.",
+    "demoClose": "Close"
   },
   "market": {
     "brand": "knowmart",
