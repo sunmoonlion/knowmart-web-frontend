@@ -28,12 +28,21 @@ import {
   type ListingForm,
 } from '@/lib/market/client'
 
+import { IncubationPermissions } from './incubation-permissions'
 import { MarketShell } from './market-shell'
 import { Badge, Field, inputClass, Price, Problem, Stars } from './parts'
 import { PublisherPanel } from './publisher'
 
 type Props = { csrfToken: string; account: React.ReactNode }
-const TABS = ['experts', 'knowledge', 'demands', 'responses', 'trades', 'owner'] as const
+const TABS = [
+  'experts',
+  'incubation',
+  'knowledge',
+  'demands',
+  'responses',
+  'trades',
+  'owner',
+] as const
 type Tab = (typeof TABS)[number]
 
 const TONE: Record<string, 'muted' | 'ok' | 'warn' | 'bad'> = {
@@ -88,6 +97,9 @@ export function MyShopScreen({ csrfToken, account }: Props) {
         <ShopHead shop={shop.data} error={shop.error} />
         <Tabs tabs={TABS} value={tab} onChange={setTab} label={(x) => t(`myShop.${x}`)} />
         {tab === 'experts' ? <MyExperts csrfToken={csrfToken} /> : null}
+        {tab === 'incubation' ? (
+          <IncubationPermissions csrfToken={csrfToken} platform={!!shop.data?.shop.platform} />
+        ) : null}
         {tab === 'knowledge' ? <MyListings csrfToken={csrfToken} /> : null}
         {tab === 'demands' ? <MyDemands /> : null}
         {tab === 'responses' ? <MyResponses /> : null}

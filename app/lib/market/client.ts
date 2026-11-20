@@ -283,3 +283,35 @@ export const postMessage = (
 
 export const problemCode = (error: unknown): string =>
   error instanceof ApiClientError ? error.problem.code : 'failed'
+
+const incubationScope = z.enum(['none', 'acquired', 'platform'])
+export type IncubationScope = z.infer<typeof incubationScope>
+const pin = z.object({
+  method_id: z.uuid(),
+  version: z.number().int().positive(),
+  digest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+})
+export const fetchIncubationPermissions = (after: string | null) =>
+  get(
+    z.object({
+      items: z.array(
+        z.object({
+          listing_id: z.uuid(),
+          title: z.string(),
+          reference: pin,
+          scope: incubationScope,
+          listed: z.boolean(),
+        }),
+      ),
+      next: z.uuid().nullable(),
+    }),
+    '/formal-methods/incubation-permissions' + query({ after }),
+  )
+export const setIncubationPermission = (csrfToken: string, id: string, scope: IncubationScope) =>
+  send(
+    z.object({ listing_id: z.uuid(), reference: pin, scope: incubationScope }),
+    `/formal-methods/listings/${seg(id)}/incubation-permission`,
+    csrfToken,
+    { scope },
+    'PUT',
+  )

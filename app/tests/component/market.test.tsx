@@ -102,6 +102,35 @@ beforeEach(() => {
 })
 
 describe('供需市场', () => {
+  it('店主按版本开放和撤回已获取者的孵化引用许可', async () => {
+    const ref = {
+      method_id: '123e4567-e89b-42d3-a456-426614174000',
+      version: 2,
+      digest: 'sha256:' + 'a'.repeat(64),
+    }
+    const listing = '123e4567-e89b-42d3-a456-426614174001'
+    let scope: client.IncubationScope = 'none'
+    vi.mocked(client.fetchMyExperts).mockResolvedValue({ items: [] })
+    vi.mocked(client.fetchIncubationPermissions).mockImplementation(async () => ({
+      items: [{ listing_id: listing, reference: ref, title: '核对', listed: true, scope }],
+      next: null,
+    }))
+    vi.mocked(client.setIncubationPermission).mockImplementation(async (_csrf, id, value) => {
+      scope = value
+      return { listing_id: id, reference: ref, scope }
+    })
+    page(<MyShopScreen csrfToken={CSRF} account={null} />)
+    fireEvent.click(screen.getByRole('tab', { name: messages.marketUi.myShop.incubation }))
+    const select = await screen.findByRole('combobox', { name: /核对/ })
+    expect(
+      within(select).queryByRole('option', { name: messages.marketUi.myShop.scopePlatform }),
+    ).toBeNull()
+    for (const value of ['acquired', 'none']) {
+      fireEvent.change(select, { target: { value } })
+      await waitFor(() => expect(select).toHaveValue(value))
+      expect(client.setIncubationPermission).toHaveBeenCalledWith(CSRF, listing, value)
+    }
+  })
   it('买知识：买好进 knowbase 的「买来的」，照实说', async () => {
     vi.mocked(client.fetchListing).mockResolvedValue(LISTING)
     vi.mocked(client.buyListing).mockResolvedValue({
