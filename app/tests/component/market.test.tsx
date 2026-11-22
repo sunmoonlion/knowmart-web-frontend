@@ -102,6 +102,40 @@ beforeEach(() => {
 })
 
 describe('供需市场', () => {
+  it('店主可撤回待审的自用正式方法并回看状态', async () => {
+    const labels = messages.marketUi.myShop
+    const row = {
+      listing_id: '123e4567-e89b-42d3-a456-426614174001',
+      title: '核对',
+      reference: {
+        method_id: '123e4567-e89b-42d3-a456-426614174002',
+        version: 1,
+        digest: 'sha256:' + '0'.repeat(64),
+      },
+      scope: 'self' as const,
+    }
+    let status: 'pending' | 'withdrawn' = 'pending'
+    vi.mocked(client.fetchMyExperts).mockResolvedValue({ items: [] })
+    vi.mocked(client.fetchOwnFormalListings).mockImplementation(async () => ({
+      items: [{ ...row, status }],
+      next: null,
+    }))
+    vi.mocked(client.withdrawFormalListing).mockImplementation(async () => {
+      status = 'withdrawn'
+      return { listing_id: row.listing_id, status }
+    })
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    try {
+      page(<MyShopScreen csrfToken={CSRF} account={null} />)
+      fireEvent.click(screen.getByRole('tab', { name: labels.formalMethods }))
+      fireEvent.click(await screen.findByRole('button', { name: labels.withdrawFormal }))
+      await screen.findByText(/核对.*已撤回/)
+      expect(client.withdrawFormalListing).toHaveBeenCalledWith(CSRF, row.listing_id)
+      expect(screen.queryByRole('button', { name: labels.withdrawFormal })).not.toBeInTheDocument()
+    } finally {
+      confirm.mockRestore()
+    }
+  })
   it('店主按版本开放和撤回已获取者的孵化引用许可', async () => {
     const ref = {
       method_id: '123e4567-e89b-42d3-a456-426614174000',

@@ -28,6 +28,7 @@ import {
   type ListingForm,
 } from '@/lib/market/client'
 
+import { MyFormalMethods } from './my-formal-methods'
 import { IncubationPermissions } from './incubation-permissions'
 import { MarketShell } from './market-shell'
 import { Badge, Field, inputClass, Price, Problem, Stars } from './parts'
@@ -36,6 +37,7 @@ import { PublisherPanel } from './publisher'
 type Props = { csrfToken: string; account: React.ReactNode }
 const TABS = [
   'experts',
+  'formalMethods',
   'incubation',
   'knowledge',
   'demands',
@@ -97,6 +99,7 @@ export function MyShopScreen({ csrfToken, account }: Props) {
         <ShopHead shop={shop.data} error={shop.error} />
         <Tabs tabs={TABS} value={tab} onChange={setTab} label={(x) => t(`myShop.${x}`)} />
         {tab === 'experts' ? <MyExperts csrfToken={csrfToken} /> : null}
+        {tab === 'formalMethods' ? <MyFormalMethods csrfToken={csrfToken} /> : null}
         {tab === 'incubation' ? (
           <IncubationPermissions csrfToken={csrfToken} platform={!!shop.data?.shop.platform} />
         ) : null}

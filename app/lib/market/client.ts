@@ -291,6 +291,30 @@ const pin = z.object({
   version: z.number().int().positive(),
   digest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
 })
+export const fetchOwnFormalListings = (after: string | null) =>
+  get(
+    z.object({
+      items: z.array(
+        z.object({
+          listing_id: z.uuid(),
+          reference: pin,
+          title: z.string(),
+          scope: z.enum(['self', 'public']),
+          status: z.enum(['listed', 'pending', 'withdrawn', 'rejected']),
+        }),
+      ),
+      next: z.uuid().nullable(),
+    }),
+    '/formal-methods/listings' + query({ after }),
+  )
+export const withdrawFormalListing = (csrfToken: string, id: string) =>
+  send(
+    z.object({ listing_id: z.uuid(), status: z.literal('withdrawn') }),
+    `/formal-methods/listings/${seg(id)}`,
+    csrfToken,
+    undefined,
+    'DELETE',
+  )
 export const fetchIncubationPermissions = (after: string | null) =>
   get(
     z.object({

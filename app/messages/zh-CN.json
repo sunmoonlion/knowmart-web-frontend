@@ -365,6 +365,20 @@
       "reviewOf": "{title}"
     },
     "myShop": {
+      "formalMethods": "我的正式方法",
+      "noFormalListings": "暂无正式方法条目。",
+      "withdrawFormal": "撤回条目",
+      "confirmWithdrawFormal": "撤回「{title}」第 {version} 版市场条目？此条目将停止新的获取。",
+      "formalStatus": {
+        "pending": "待审核",
+        "listed": "已上架",
+        "withdrawn": "已撤回",
+        "rejected": "已驳回"
+      },
+      "formalScope": {
+        "public": "公开",
+        "self": "自用"
+      },
       "incubation": "孵化引用许可",
       "incubationHint": "逐版设置哪些作者可以在孵化时把它用作步骤。",
       "noIncubationListings": "本页没有可管理的公开版本。",

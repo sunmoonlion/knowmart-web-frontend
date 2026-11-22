@@ -365,6 +365,20 @@
       "reviewOf": "{title}"
     },
     "myShop": {
+      "formalMethods": "Formal methods",
+      "noFormalListings": "No formal method listings.",
+      "withdrawFormal": "Withdraw listing",
+      "confirmWithdrawFormal": "Withdraw {title} v{version} from the market? This stops new acquisitions.",
+      "formalStatus": {
+        "pending": "Pending",
+        "listed": "Listed",
+        "withdrawn": "Withdrawn",
+        "rejected": "Rejected"
+      },
+      "formalScope": {
+        "public": "Public",
+        "self": "Self-use"
+      },
       "incubation": "Incubation permissions",
       "incubationHint": "Choose who may use each listed version as a step during incubation.",
       "noIncubationListings": "No published versions on this page.",
