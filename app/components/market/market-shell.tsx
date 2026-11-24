@@ -4,22 +4,28 @@ import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import type { DemandDetail } from '@/contracts/market'
 import { cn } from '@/lib/utils'
 
-// 供需市场的栏目（SDD 0018 第十一节第 7 之二小节，取代第 7 小节那一套）：首页是小店列表；
-// 跨店的「找专家」「找知识」「需求大厅」照旧；我发布的、发布主体并进「我的小店」；「我买到的」
-// 拆掉（买来的知识在 knowbase 总栏，请过的专家在 knowbench，订单留在小店的交易记录）
 export const MARKET_SECTIONS = [
   { key: 'home', path: '' },
   { key: 'market', path: 'knowbots' },
   { key: 'knowledge', path: 'knowledge' },
-  { key: 'demands', path: 'demands' },
+  { key: 'publishExpert', path: 'publish/expert' },
+  { key: 'publishKnowledge', path: 'publish/knowledge' },
   { key: 'shop', path: 'shop' },
   { key: 'rules', path: 'rules' },
 ] as const
 
-// 一行栏目：市场各页的页头里，专家目录与详情页的页头下面也放一行
-export function MarketNav({ className }: { className?: string }) {
+type DemandKind = DemandDetail['kind']
+
+export function MarketNav({
+  className,
+  demandKind,
+}: {
+  className?: string
+  demandKind?: DemandKind
+}) {
   const t = useTranslations('market')
   const locale = useLocale()
   const pathname = usePathname()
@@ -28,9 +34,11 @@ export function MarketNav({ className }: { className?: string }) {
       {MARKET_SECTIONS.map((section) => {
         const href = section.path ? `/${locale}/${section.path}` : `/${locale}`
         // 首页只认它自己；小店详情页（/shops/…）算在首页下面
-        const active = section.path
-          ? pathname === href || pathname.startsWith(`${href}/`)
-          : pathname === href || pathname.startsWith(`${href}/shops/`)
+        const active = demandKind
+          ? section.path === `publish/${demandKind}`
+          : section.path
+            ? pathname === href || pathname.startsWith(`${href}/`)
+            : pathname === href || pathname.startsWith(`${href}/shops/`)
         return (
           <Link
             key={section.key}
@@ -53,9 +61,11 @@ export function MarketNav({ className }: { className?: string }) {
 export function MarketShell({
   account,
   children,
+  demandKind,
 }: {
   account: React.ReactNode
   children: React.ReactNode
+  demandKind?: DemandKind
 }) {
   const t = useTranslations('market')
   const locale = useLocale()
@@ -65,7 +75,7 @@ export function MarketShell({
         <Link href={`/${locale}`} className="text-primary font-semibold">
           {t('brand')}
         </Link>
-        <MarketNav className="flex-1" />
+        <MarketNav className="flex-1" demandKind={demandKind} />
         <div className="flex items-center gap-3">{account}</div>
       </header>
       <main className="flex-1">{children}</main>

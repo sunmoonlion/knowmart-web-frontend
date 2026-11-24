@@ -114,3 +114,44 @@ test('sitemap uses the runtime application origin', async ({ request, baseURL })
   expect(response.status()).toBe(200)
   expect(await response.text()).toContain(`${baseURL}/en`)
 })
+
+test('opens each publishing section from the marketplace and preserves old demand bookmarks', async ({
+  context,
+  page,
+}) => {
+  await context.addCookies([
+    {
+      name: 'sunmoonai_knowmart_web_sid',
+      value: 'e2e-session',
+      domain: '127.0.0.1',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ])
+  await page.route('**/api/web/v1/knowmart/market/demands?**', (route) =>
+    route.fulfill({ json: { items: [], total: 0, page: 1, page_size: 24 } }),
+  )
+  await page.goto('/zh-CN/demands?kind=knowledge')
+  await expect(page).toHaveURL(/\/zh-CN\/publish\/knowledge$/)
+  const nav = page.getByRole('navigation', { name: '栏目' })
+  await expect(nav.getByRole('link')).toHaveText([
+    '搜寻小店',
+    '搜寻专家',
+    '搜寻知识',
+    '发布专家',
+    '发布知识',
+    '我的小店',
+    '驻场规则',
+  ])
+  await expect(nav.getByRole('link', { name: '发布知识' })).toHaveAttribute('aria-current', 'page')
+  await page.getByRole('button', { name: '发布需求' }).click()
+  await page.getByLabel('标题', { exact: true }).fill('知识资料请求')
+  await nav.getByRole('link', { name: '发布专家' }).click()
+  await expect(page).toHaveURL(/\/zh-CN\/publish\/expert$/)
+  await expect(page.getByRole('heading', { name: '发布专家' })).toBeVisible()
+  await page.reload()
+  await expect(nav.getByRole('link', { name: '发布专家' })).toHaveAttribute('aria-current', 'page')
+  await page.getByRole('button', { name: '发布需求' }).click()
+  await expect(page.getByLabel('标题', { exact: true })).toHaveValue('')
+})

@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('experts')
-  return { title: t('title'), robots: { index: false, follow: false } }
+  const t = await getTranslations('market.nav')
+  return { title: t('market'), robots: { index: false, follow: false } }
 }
 
 // 专家目录（SDD 0032）。路径沿用 /knowbots：工作台「请我的分身」与登录回跳都认它

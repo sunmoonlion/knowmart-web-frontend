@@ -195,10 +195,11 @@
     "brand": "knowmart",
     "sections": "栏目",
     "nav": {
-      "home": "小店",
-      "market": "找专家",
-      "knowledge": "找知识",
-      "demands": "需求大厅",
+      "home": "搜寻小店",
+      "market": "搜寻专家",
+      "knowledge": "搜寻知识",
+      "publishExpert": "发布专家",
+      "publishKnowledge": "发布知识",
       "shop": "我的小店",
       "rules": "驻场规则"
     }
@@ -323,7 +324,7 @@
       "license": "证照"
     },
     "knowledge": {
-      "title": "知识",
+      "title": "搜寻知识",
       "lead": "卖家上架出售的资料。买下后 knowbase 给你建这份的使用权，进你 knowbase 总栏的「买来的」，能下载。",
       "empty": "还没有上架的知识。",
       "description": "内容说明",
@@ -341,7 +342,7 @@
       "where": "买下后进你 knowbase 总栏的「买来的」；要在 knowbench、knowlab 里用，先在 knowbase 把它展示给那个应用。"
     },
     "shops": {
-      "title": "小店",
+      "title": "搜寻小店",
       "lead": "每位用户在市场上有一家小店，放自己的供给（专家、知识）和公开的需求。这里只列有东西在架的店，按时间或店名排，不做推荐。",
       "search": "按店名找",
       "sort": "排序",
@@ -408,12 +409,13 @@
       "restoredEvent": "平台恢复：{note}"
     },
     "demands": {
-      "title": "需求大厅",
-      "lead": "买家发需求，卖家响应；买家选一家成交。",
+      "title": "需求详情",
+      "lead": {
+        "expert": "发布你想请专家解决的问题，服务方可在这里响应。",
+        "knowledge": "发布你需要的资料，提供方可在这里响应。"
+      },
       "post": "发布需求",
-      "kind": "要什么",
       "empty": "还没有收响应的需求。",
-      "want": "要专家还是知识",
       "titleField": "标题",
       "problem": "要解决什么",
       "dataWanted": "要什么样的资料（知识类写清楚）",
@@ -423,7 +425,7 @@
       "publish": "发布",
       "close": "结束这条需求",
       "publicToShop": "公开到我的小店",
-      "publicToShopHint": "不勾也会匿名进需求大厅；勾了，这条需求还会显示在你的小店页上。"
+      "publicToShopHint": "需求默认匿名展示；勾选后，也会出现在你的小店。"
     },
     "mine": {
       "knowledgeLead": "从你在 knowbase 交给 knowmart 的资料里选，写成条目，交运营审核后上架。",

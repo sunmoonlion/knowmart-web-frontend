@@ -544,32 +544,36 @@ describe('供需市场', () => {
     expect(screen.getByText('在架')).toBeInTheDocument()
   })
 
-  it('需求：「公开到我的小店」默认不勾，勾了才带上', async () => {
-    vi.mocked(client.fetchDemandHall).mockResolvedValue({
-      items: [],
-      total: 0,
-      page: 1,
-      page_size: 24,
-    })
-    vi.mocked(client.createDemand).mockResolvedValue({} as never)
-    const { DemandHall } = await import('@/components/market/demands')
-    page(<DemandHall csrfToken={CSRF} account={null} />)
-    fireEvent.click(screen.getByRole('button', { name: '发布需求' }))
-    const form = within(await screen.findByRole('form', { name: '发布需求' }))
-    const tick = form.getByLabelText(/公开到我的小店/)
-    expect(tick).not.toBeChecked()
-    fireEvent.change(form.getByLabelText('标题'), { target: { value: '要行业数据' } })
-    fireEvent.change(form.getByLabelText('要解决什么'), { target: { value: '做对比' } })
-    fireEvent.change(form.getByLabelText('期限'), { target: { value: '2026-12-31' } })
-    fireEvent.click(tick)
-    fireEvent.click(form.getByRole('button', { name: '发布' }))
-    await waitFor(() =>
-      expect(client.createDemand).toHaveBeenCalledWith(
-        CSRF,
-        expect.objectContaining({ title: '要行业数据', public_to_shop: true }),
-      ),
-    )
-  })
+  it.each(['expert', 'knowledge'] as const)(
+    '从 %s 栏目发布同类需求，公开到小店需勾选',
+    async (kind) => {
+      vi.mocked(client.fetchDemandHall).mockResolvedValue({
+        items: [],
+        total: 0,
+        page: 1,
+        page_size: 24,
+      })
+      vi.mocked(client.createDemand).mockResolvedValue({} as never)
+      const { DemandHall } = await import('@/components/market/demands')
+      page(<DemandHall kind={kind} csrfToken={CSRF} account={null} />)
+      expect(client.fetchDemandHall).toHaveBeenCalledWith({ kind, page: 1 })
+      fireEvent.click(screen.getByRole('button', { name: '发布需求' }))
+      const form = within(await screen.findByRole('form', { name: '发布需求' }))
+      const tick = form.getByLabelText(/公开到我的小店/)
+      expect(tick).not.toBeChecked()
+      fireEvent.change(form.getByLabelText('标题'), { target: { value: '要行业数据' } })
+      fireEvent.change(form.getByLabelText('要解决什么'), { target: { value: '做对比' } })
+      fireEvent.change(form.getByLabelText('期限'), { target: { value: '2026-12-31' } })
+      fireEvent.click(tick)
+      fireEvent.click(form.getByRole('button', { name: '发布' }))
+      await waitFor(() =>
+        expect(client.createDemand).toHaveBeenCalledWith(
+          CSRF,
+          expect.objectContaining({ kind, title: '要行业数据', public_to_shop: true }),
+        ),
+      )
+    },
+  )
 
   it('需求方看得到响应的卖家的店', async () => {
     const response = {

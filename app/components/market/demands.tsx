@@ -27,16 +27,15 @@ import { Badge, Field, inputClass, Pager, Price, Problem, ReportButton, ShopLink
 type Props = { csrfToken: string; account: React.ReactNode }
 
 // 需求大厅（SDD 0018 第十一节）：买家发需求，卖家响应，买家选一家
-export function DemandHall({ csrfToken, account }: Props) {
+export function DemandHall({ csrfToken, account, kind }: Props & { kind: DemandForm['kind'] }) {
   const t = useTranslations('marketUi')
   const locale = useLocale()
   const format = useFormatter()
   const client = useQueryClient()
-  const [filters, setFilters] = useState<{ kind: string | null; q: string; page: number }>({
-    kind: null,
-    q: '',
-    page: 1,
-  })
+  const [page, setPage] = useState(1)
+  const filters = { kind, page }
+  const nav = useTranslations('market.nav')
+  const title = nav(kind === 'expert' ? 'publishExpert' : 'publishKnowledge')
   const [writing, setWriting] = useState(false)
   const hall = useQuery({
     queryKey: ['market', 'demands', filters] as const,
@@ -47,8 +46,8 @@ export function DemandHall({ csrfToken, account }: Props) {
       <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-8">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{t('demands.title')}</h1>
-            <p className="text-muted-foreground mt-1 text-sm">{t('demands.lead')}</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+            <p className="text-muted-foreground mt-1 text-sm">{t(`demands.lead.${kind}`)}</p>
           </div>
           <Button size="sm" onClick={() => setWriting(!writing)}>
             {t('demands.post')}
@@ -57,24 +56,13 @@ export function DemandHall({ csrfToken, account }: Props) {
         {writing ? (
           <DemandEditor
             csrfToken={csrfToken}
+            kind={kind}
             onDone={() => {
               setWriting(false)
               void client.invalidateQueries({ queryKey: ['market', 'demands'] })
             }}
           />
         ) : null}
-        <div className="flex gap-2" role="group" aria-label={t('demands.kind')}>
-          {[null, 'expert', 'knowledge'].map((kind) => (
-            <Button
-              key={kind ?? 'all'}
-              size="sm"
-              variant={filters.kind === kind ? 'default' : 'outline'}
-              onClick={() => setFilters({ ...filters, kind, page: 1 })}
-            >
-              {kind ? t(`kind.${kind}`) : t('all')}
-            </Button>
-          ))}
-        </div>
         {hall.isPending ? (
           <p className="text-muted-foreground text-sm">{t('loading')}</p>
         ) : hall.isError ? (
@@ -84,7 +72,7 @@ export function DemandHall({ csrfToken, account }: Props) {
             {t('demands.empty')}
           </p>
         ) : (
-          <ul className="divide-y rounded-xl border" aria-label={t('demands.title')}>
+          <ul className="divide-y rounded-xl border" aria-label={title}>
             {hall.data.items.map((demand) => (
               <li key={demand.demand_id} className="space-y-1 px-4 py-3">
                 <Link
@@ -115,7 +103,7 @@ export function DemandHall({ csrfToken, account }: Props) {
             page={hall.data.page}
             total={hall.data.total}
             size={hall.data.page_size}
-            onPage={(page) => setFilters({ ...filters, page })}
+            onPage={setPage}
           />
         ) : null}
       </div>
@@ -123,10 +111,18 @@ export function DemandHall({ csrfToken, account }: Props) {
   )
 }
 
-function DemandEditor({ csrfToken, onDone }: { csrfToken: string; onDone: () => void }) {
+function DemandEditor({
+  csrfToken,
+  kind,
+  onDone,
+}: {
+  csrfToken: string
+  kind: DemandForm['kind']
+  onDone: () => void
+}) {
   const t = useTranslations('marketUi')
   const [form, setForm] = useState<DemandForm>({
-    kind: 'expert',
+    kind,
     title: '',
     problem: '',
     data_wanted: '',
@@ -145,19 +141,6 @@ function DemandEditor({ csrfToken, onDone }: { csrfToken: string; onDone: () => 
         if (ready) save.mutate()
       }}
     >
-      <fieldset className="flex gap-4 text-sm">
-        <legend className="mb-1 font-medium">{t('demands.want')}</legend>
-        {(['expert', 'knowledge'] as const).map((kind) => (
-          <label key={kind} className="flex items-center gap-1">
-            <input
-              type="radio"
-              checked={form.kind === kind}
-              onChange={() => setForm({ ...form, kind })}
-            />
-            {t(`kind.${kind}`)}
-          </label>
-        ))}
-      </fieldset>
       <Field label={t('demands.titleField')}>
         <input
           className={inputClass}
@@ -239,7 +222,7 @@ export function DemandScreen({ csrfToken, account, demandId }: Props & { demandI
   })
   const d = demand.data
   return (
-    <MarketShell account={account}>
+    <MarketShell account={account} demandKind={d?.kind}>
       <div className="mx-auto w-full max-w-3xl space-y-6 px-6 py-8">
         {demand.isPending ? (
           <p className="text-muted-foreground text-sm">{t('loading')}</p>

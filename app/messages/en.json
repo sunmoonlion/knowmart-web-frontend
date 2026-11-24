@@ -195,10 +195,11 @@
     "brand": "knowmart",
     "sections": "Sections",
     "nav": {
-      "home": "Shops",
-      "market": "Find experts",
-      "knowledge": "Find knowledge",
-      "demands": "Demands",
+      "home": "Search shops",
+      "market": "Search experts",
+      "knowledge": "Search knowledge",
+      "publishExpert": "Post an expert request",
+      "publishKnowledge": "Post a knowledge request",
       "shop": "My shop",
       "rules": "House rules"
     }
@@ -323,7 +324,7 @@
       "license": "License"
     },
     "knowledge": {
-      "title": "Knowledge",
+      "title": "Search knowledge",
       "lead": "Material sellers offer. Once bought, knowbase gives you the right to use it; it shows under “Purchased” in your knowbase library and you can download it.",
       "empty": "Nothing is listed yet.",
       "description": "What is in it",
@@ -341,7 +342,7 @@
       "where": "It goes under “Purchased” in your knowbase library; to use it in knowbench or knowlab, show it to that app in knowbase first."
     },
     "shops": {
-      "title": "Shops",
+      "title": "Search shops",
       "lead": "Every user has one shop in the market, holding their supply (experts, knowledge) and the demands they make public. Only shops with something on show are listed, by time or name; nothing is recommended.",
       "search": "Find by shop name",
       "sort": "Sort",
@@ -408,12 +409,13 @@
       "restoredEvent": "Restored by the platform: {note}"
     },
     "demands": {
-      "title": "Demand hall",
-      "lead": "Buyers post demands, sellers respond, and the buyer chooses one.",
+      "title": "Request details",
+      "lead": {
+        "expert": "Describe what you need an expert to do. Providers can respond here.",
+        "knowledge": "Describe the material you need. Providers can respond here."
+      },
       "post": "Post a demand",
-      "kind": "Wanted",
       "empty": "No demands are taking responses.",
-      "want": "Expert or knowledge",
       "titleField": "Title",
       "problem": "What to solve",
       "dataWanted": "What material (for knowledge)",
@@ -423,7 +425,7 @@
       "publish": "Post",
       "close": "Close this demand",
       "publicToShop": "Show in my shop",
-      "publicToShopHint": "Either way it goes into the demand hall without your name; ticked, it also shows on your shop page."
+      "publicToShopHint": "Requests are shown anonymously. Select this to also display the request in your shop."
     },
     "mine": {
       "knowledgeLead": "Write listings from material you handed to knowmart in knowbase; operators review them before they go up.",
