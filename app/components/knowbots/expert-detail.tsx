@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import { CrossAppLink } from '@/components/common/cross-app-link'
-import { MarketNav } from '@/components/market/market-shell'
+import { MarketHeader } from '@/components/market/market-shell'
 import { Price, Reviews, ShopLink, Stars } from '@/components/market/parts'
 import { Button } from '@/components/ui/button'
 import type { ExpertDetail as Detail } from '@/contracts/experts'
@@ -59,16 +59,15 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
 
   return (
     <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b px-6 py-3">
+      <MarketHeader account={account} />
+      <div className="px-6 pt-3">
         <Link
           href={`/${locale}/knowbots${back.size ? `?${back}` : ''}`}
           className="text-primary font-semibold"
         >
           {t('back')}
         </Link>
-        <div className="flex items-center gap-4">{account}</div>
-      </header>
-      <MarketNav className="border-b px-6 py-1.5" />
+      </div>
       <main className="mx-auto w-full max-w-5xl flex-1 p-6">
         {expert.isPending ? (
           <p className="text-muted-foreground">{t('loading')}</p>

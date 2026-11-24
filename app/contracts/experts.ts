@@ -55,6 +55,27 @@ export const expertListSchema = z
   })
   .strict()
 
+const catalogMethod = z
+  .object({
+    listing_id: z.uuid(),
+    reference: z.object({
+      method_id: z.uuid(),
+      version: z.number().int().positive(),
+      digest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+    }),
+    method_kind: z.enum(['tool', 'expert']),
+    name: z.string(),
+    tagline: z.string(),
+    category: categorySchema,
+    updated_at: z.string(),
+  })
+  .strict()
+
+export const methodDirectorySchema = expertListSchema.extend({
+  items: z.array(z.union([itemSchema, catalogMethod])),
+})
+export type MethodDirectory = z.infer<typeof methodDirectorySchema>
+
 const labelled = z.object({ label: z.string(), text: z.string() }).strict()
 
 export const expertDetailSchema = z

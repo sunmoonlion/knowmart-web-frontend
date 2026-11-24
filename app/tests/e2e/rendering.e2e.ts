@@ -155,3 +155,78 @@ test('opens each publishing section from the marketplace and preserves old deman
   await page.getByRole('button', { name: '发布需求' }).click()
   await expect(page.getByLabel('标题', { exact: true })).toHaveValue('')
 })
+
+test('market navigation comes before method types, and only expert methods offer business categories', async ({
+  context,
+  page,
+}) => {
+  await context.addCookies([
+    {
+      name: 'sunmoonai_knowmart_web_sid',
+      value: 'e2e-session',
+      domain: '127.0.0.1',
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+    },
+  ])
+  await page.route('**/api/web/v1/knowmart/method-directory?**', (route) => {
+    const query = new URL(route.request().url()).searchParams
+    const tool = query.get('kind') === 'tool'
+    const cat = {
+      group: 'finance',
+      group_name: '金融',
+      code: 'finance.private_fund',
+      name: '私募基金',
+    }
+    return route.fulfill({
+      json: {
+        contract_version: 1,
+        total: 1,
+        page: 1,
+        page_size: 24,
+        categories: tool
+          ? []
+          : [
+              {
+                group: 'finance',
+                group_name: '金融',
+                count: 1,
+                children: [{ code: cat.code, name: cat.name, count: 1 }],
+              },
+            ],
+        items: [
+          {
+            listing_id: '487a3543-e970-4a7b-ae67-57785c918c44',
+            method_kind: tool ? 'tool' : 'expert',
+            reference: {
+              method_id: 'ec4a5858-0bd2-5a3e-8211-e0e3f0d882a6',
+              version: 1,
+              digest: 'sha256:' + 'a'.repeat(64),
+            },
+            name: tool ? '核验结果汇总' : '样例专家',
+            tagline: '测试',
+            category: cat,
+            updated_at: '2026-11-24T08:00:00Z',
+          },
+        ],
+      },
+    })
+  })
+  await page.goto('/zh-CN/knowbots')
+  const nav = page.getByRole('navigation', { name: '栏目' })
+  const kinds = page.getByRole('navigation', { name: '方法类型' })
+  await expect(nav.getByRole('link', { name: '搜寻专家' })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('button', { name: '金融', exact: true })).toBeVisible()
+  expect((await nav.boundingBox())!.y).toBeLessThan((await kinds.boundingBox())!.y)
+  await kinds.getByRole('button', { name: '工具方法' }).click()
+  await expect(page.getByRole('heading', { name: '核验结果汇总' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: '类目' })).toHaveCount(0)
+  await expect(page.getByText('专家方向演示')).toHaveCount(0)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: '核验结果汇总' })).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await kinds.getByRole('button', { name: '专家方法' }).click()
+  await page.getByLabel('业务细类').selectOption('finance.private_fund')
+  await expect(page).toHaveURL(/category=finance.private_fund/)
+})

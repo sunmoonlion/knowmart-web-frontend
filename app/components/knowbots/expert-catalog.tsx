@@ -9,7 +9,7 @@ import { useState, useSyncExternalStore } from 'react'
 
 import { DemoExpertGallery } from '@/components/knowbots/demo-expert-gallery'
 import { CrossAppLink } from '@/components/common/cross-app-link'
-import { MarketNav } from '@/components/market/market-shell'
+import { MarketHeader } from '@/components/market/market-shell'
 import { Button } from '@/components/ui/button'
 import type { CategoryTree, ExpertItem } from '@/contracts/experts'
 import { useCrossAppOrigin } from '@/lib/cross-app/use-cross-app'
@@ -101,21 +101,16 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
 
   return (
     <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-6 py-3">
-        <Link href={`/${locale}/knowbots`} className="text-primary font-semibold">
-          {t('brand')}
-        </Link>
-        <nav aria-label={t('categories')} className="flex gap-1 overflow-x-auto">
-          <TopTab active={group === null} onClick={() => go({ category: null })}>
-            {t('all')}
-          </TopTab>
-          {tree.map((g) => (
+      <MarketHeader account={account} />
+      <div className="flex flex-wrap items-center gap-4 border-b px-6 py-3">
+        <nav aria-label={t('methodTypes')} className="flex gap-1">
+          {(['tool', 'expert'] as const).map((kind) => (
             <TopTab
-              key={g.group}
-              active={group === g.group}
-              onClick={() => go({ category: g.group })}
+              key={kind}
+              active={kind === filters.kind}
+              onClick={() => go({ kind, category: null })}
             >
-              {g.group_name}
+              {t(kind === 'tool' ? 'toolMethod' : 'expertMethod')}
             </TopTab>
           ))}
         </nav>
@@ -132,73 +127,114 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
             type="search"
             value={words}
             onChange={(event) => setWords(event.target.value)}
-            placeholder={t('search')}
-            aria-label={t('search')}
+            placeholder={t(filters.kind === 'tool' ? 'searchTool' : 'search')}
+            aria-label={t(filters.kind === 'tool' ? 'searchTool' : 'search')}
             maxLength={100}
             className="w-full rounded-md border px-3 py-1.5 text-sm"
           />
         </form>
-        <div className="flex items-center gap-4">{account}</div>
-      </header>
-      <MarketNav className="border-b px-6 py-1.5" />
+      </div>
+      {filters.kind === 'expert' && (
+        <nav aria-label={t('categories')} className="flex gap-1 overflow-x-auto border-b px-6 py-2">
+          <TopTab active={group === null} onClick={() => go({ category: null })}>
+            {t('all')}
+          </TopTab>
+          {tree.map((g) => (
+            <TopTab
+              key={g.group}
+              active={group === g.group}
+              onClick={() => go({ category: g.group })}
+            >
+              {g.group_name}
+            </TopTab>
+          ))}
+        </nav>
+      )}
 
-      <div className="flex min-h-0 flex-1">
-        {collapsed ? (
-          <aside
-            className="flex w-10 shrink-0 flex-col items-center border-r py-3"
-            aria-label={t('categories')}
+      {filters.kind === 'expert' && sideGroups.length > 0 && (
+        <label className="flex items-center gap-2 px-6 pt-2 text-sm md:hidden">
+          {t('subcategory')}
+          <select
+            value={filters.category ?? ''}
+            onChange={(event) => go({ category: event.target.value || null })}
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('expand')}
-              title={t('expand')}
-              onClick={toggle}
-            >
-              <PanelLeftOpenIcon className="size-4" />
-            </Button>
-          </aside>
-        ) : (
-          <aside className="w-56 shrink-0 border-r py-3 max-md:hidden" aria-label={t('categories')}>
-            <button
-              type="button"
-              onClick={toggle}
-              className="text-muted-foreground hover:text-foreground mb-2 flex items-center gap-1 px-4 text-xs"
-            >
-              <PanelLeftCloseIcon className="size-3.5" />
-              {t('collapse')}
-            </button>
-            {sideGroups.map((g) => (
-              <div key={g.group} className="mb-2">
-                <p className="px-4 py-1 text-sm font-semibold">{g.group_name}</p>
-                <ul>
-                  {g.children.map((c) => (
-                    <li key={c.code}>
-                      <button
-                        type="button"
-                        aria-current={filters.category === c.code ? 'true' : undefined}
-                        onClick={() => go({ category: c.code })}
-                        className={cn(
-                          'flex w-full items-baseline justify-between gap-2 px-4 py-1.5 pl-6 text-left text-sm',
-                          filters.category === c.code
-                            ? 'bg-muted border-primary border-l-2 font-semibold'
-                            : 'text-muted-foreground hover:text-foreground',
-                        )}
-                      >
-                        <span>{c.name}</span>
-                        <span className="tabular-nums">{c.count}</span>
-                      </button>
-                    </li>
+            <option value="">{t('all')}</option>
+            {tree.map((g) => (
+              <optgroup key={g.group} label={g.group_name}>
+                <option value={g.group}>{g.group_name}</option>
+                {g.children
+                  .filter((c) => c.code !== g.group)
+                  .map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name}
+                    </option>
                   ))}
-                </ul>
-              </div>
+              </optgroup>
             ))}
-          </aside>
-        )}
+          </select>
+        </label>
+      )}
+      <div className="flex min-h-0 flex-1">
+        {filters.kind === 'expert' &&
+          (collapsed ? (
+            <aside
+              className="flex w-10 shrink-0 flex-col items-center border-r py-3"
+              aria-label={t('categories')}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('expand')}
+                title={t('expand')}
+                onClick={toggle}
+              >
+                <PanelLeftOpenIcon className="size-4" />
+              </Button>
+            </aside>
+          ) : (
+            <aside
+              className="w-56 shrink-0 border-r py-3 max-md:hidden"
+              aria-label={t('categories')}
+            >
+              <button
+                type="button"
+                onClick={toggle}
+                className="text-muted-foreground hover:text-foreground mb-2 flex items-center gap-1 px-4 text-xs"
+              >
+                <PanelLeftCloseIcon className="size-3.5" />
+                {t('collapse')}
+              </button>
+              {sideGroups.map((g) => (
+                <div key={g.group} className="mb-2">
+                  <p className="px-4 py-1 text-sm font-semibold">{g.group_name}</p>
+                  <ul>
+                    {g.children.map((c) => (
+                      <li key={c.code}>
+                        <button
+                          type="button"
+                          aria-current={filters.category === c.code ? 'true' : undefined}
+                          onClick={() => go({ category: c.code })}
+                          className={cn(
+                            'flex w-full items-baseline justify-between gap-2 px-4 py-1.5 pl-6 text-left text-sm',
+                            filters.category === c.code
+                              ? 'bg-muted border-primary border-l-2 font-semibold'
+                              : 'text-muted-foreground hover:text-foreground',
+                          )}
+                        >
+                          <span>{c.name}</span>
+                          <span className="tabular-nums">{c.count}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </aside>
+          ))}
 
         <main className="min-w-0 flex-1 space-y-4 p-6">
           <h1 className="sr-only">{t('title')}</h1>
-          {summoning ? (
+          {summoning && filters.kind === 'expert' ? (
             <p className="bg-muted rounded-md px-3 py-2 text-sm">{t('fromWorkbench')}</p>
           ) : null}
           {failed ? (
@@ -252,7 +288,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
                 className="text-primary"
                 onClick={() => {
                   setWords('')
-                  go({ ...DEFAULT_FILTERS })
+                  go({ ...DEFAULT_FILTERS, kind: filters.kind })
                 }}
               >
                 {t('reset')}
@@ -270,25 +306,46 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
             chips.length > 0 ? (
               <p className="text-muted-foreground">{t('noMatch')}</p>
             ) : (
-              <p className="text-muted-foreground">{t('empty')}</p>
+              <p className="text-muted-foreground">
+                {t(filters.kind === 'tool' ? 'emptyTools' : 'empty')}
+              </p>
             )
           ) : (
             <>
               <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {list.data.items.map((item) => (
-                  <li key={item.knowbot_id}>
-                    <ExpertCard
-                      item={item}
-                      href={`/${locale}/knowbots/${item.knowbot_id}${detailQuery.size ? `?${detailQuery}` : ''}`}
-                      summoning={summoning !== null}
-                      busy={summon.isPending}
-                      onSummon={() => {
-                        setFailed(null)
-                        summon.mutate({ knowbotId: item.knowbot_id, version: item.version })
-                      }}
-                    />
-                  </li>
-                ))}
+                {list.data.items.map((item) =>
+                  'listing_id' in item ? (
+                    <li key={item.listing_id}>
+                      <article className="h-full space-y-2 rounded-lg border p-4">
+                        <h2 className="font-semibold">{item.name}</h2>
+                        <p className="text-sm">{item.tagline}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {item.method_kind === 'expert' && item.category.name + ' · '}
+                          {t('version', { version: item.reference.version })}
+                        </p>
+                        <details className="text-sm">
+                          <summary>{t('versionIdentity')}</summary>
+                          <code className="break-all">
+                            {item.reference.method_id} · {item.reference.digest}
+                          </code>
+                        </details>
+                      </article>
+                    </li>
+                  ) : (
+                    <li key={item.knowbot_id}>
+                      <ExpertCard
+                        item={item}
+                        href={`/${locale}/knowbots/${item.knowbot_id}${detailQuery.size ? `?${detailQuery}` : ''}`}
+                        summoning={summoning !== null}
+                        busy={summon.isPending}
+                        onSummon={() => {
+                          setFailed(null)
+                          summon.mutate({ knowbotId: item.knowbot_id, version: item.version })
+                        }}
+                      />
+                    </li>
+                  ),
+                )}
               </ul>
               <Pager
                 total={list.data.total}
@@ -298,7 +355,9 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
               />
             </>
           )}
-          {list.isSuccess ? <DemoExpertGallery filters={filters} /> : null}
+          {list.isSuccess && filters.kind === 'expert' ? (
+            <DemoExpertGallery filters={filters} />
+          ) : null}
         </main>
       </div>
     </div>

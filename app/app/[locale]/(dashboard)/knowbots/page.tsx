@@ -26,7 +26,11 @@ export default async function ExpertsPage({
   // 登录完回到这里，从工作台带来的 from、ref 不丢
   const query = new URLSearchParams()
   for (const [key, value] of Object.entries(await searchParams)) {
-    if ((key === 'from' || key === 'ref') && typeof value === 'string') query.set(key, value)
+    if (
+      ['from', 'ref', 'kind', 'category', 'q', 'sort', 'updated', 'page'].includes(key) &&
+      typeof value === 'string'
+    )
+      query.set(key, value)
   }
   const next = `/${locale}/knowbots${query.size ? `?${query.toString()}` : ''}`
   const session = await requireBrowserSession(locale, next)

@@ -2,15 +2,16 @@
 
 import {
   expertDetailSchema,
-  expertListSchema,
+  methodDirectorySchema,
   type ExpertDetail,
-  type ExpertList,
+  type MethodDirectory,
 } from '@/contracts/experts'
 import { requestJson } from '@/lib/common/api-client'
 import { KnowbotContractError } from '@/lib/knowbots/client'
 
 // 专家目录（SDD 0032）的筛选条件。写进页面地址，刷新、分享、从详情页返回都不丢。
 export type CatalogFilters = {
+  kind: 'expert' | 'tool'
   category: string | null
   q: string
   updated: 'any' | '7d' | '30d'
@@ -19,6 +20,7 @@ export type CatalogFilters = {
 }
 
 export const DEFAULT_FILTERS: CatalogFilters = {
+  kind: 'expert',
   category: null,
   q: '',
   updated: 'any',
@@ -32,13 +34,15 @@ const CATEGORY = /^[a-z_.]{1,64}$/
 
 // 地址里不认识的值当作没写，用默认
 export function filtersFrom(search: URLSearchParams): CatalogFilters {
-  const category = search.get('category')
+  const kind = search.get('kind') === 'tool' ? 'tool' : 'expert'
+  const category = kind === 'expert' ? search.get('category') : null
   const page = Number.parseInt(search.get('page') ?? '1', 10)
   const pick = <T extends string>(key: string, allowed: Set<string>, fallback: T): T => {
     const value = search.get(key)
     return value && allowed.has(value) ? (value as T) : fallback
   }
   return {
+    kind,
     category: category && CATEGORY.test(category) ? category : null,
     q: (search.get('q') ?? '').slice(0, 100),
     updated: pick('updated', UPDATED, 'any'),
@@ -54,7 +58,8 @@ export function filtersTo(filters: CatalogFilters, keep: URLSearchParams): URLSe
     const value = keep.get(key)
     if (value !== null) out.set(key, value)
   }
-  if (filters.category) out.set('category', filters.category)
+  if (filters.kind === 'tool') out.set('kind', 'tool')
+  if (filters.category && filters.kind !== 'tool') out.set('category', filters.category)
   if (filters.q.trim()) out.set('q', filters.q.trim())
   if (filters.updated !== 'any') out.set('updated', filters.updated)
   if (filters.sort !== 'updated') out.set('sort', filters.sort)
@@ -62,10 +67,11 @@ export function filtersTo(filters: CatalogFilters, keep: URLSearchParams): URLSe
   return out
 }
 
-export async function fetchExperts(filters: CatalogFilters): Promise<ExpertList> {
+export async function fetchExperts(filters: CatalogFilters): Promise<MethodDirectory> {
   const query = filtersTo(filters, new URLSearchParams())
-  const parsed = expertListSchema.safeParse(
-    await requestJson(`/api/web/v1/knowmart/experts${query.size ? `?${query}` : ''}`),
+  query.set('kind', filters.kind)
+  const parsed = methodDirectorySchema.safeParse(
+    await requestJson(`/api/web/v1/knowmart/method-directory${query.size ? `?${query}` : ''}`),
   )
   if (!parsed.success) throw new KnowbotContractError({ cause: parsed.error })
   return parsed.data

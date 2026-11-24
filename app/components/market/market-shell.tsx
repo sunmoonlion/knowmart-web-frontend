@@ -67,18 +67,30 @@ export function MarketShell({
   children: React.ReactNode
   demandKind?: DemandKind
 }) {
+  return (
+    <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">
+      <MarketHeader account={account} demandKind={demandKind} />
+      <main className="flex-1">{children}</main>
+    </div>
+  )
+}
+
+export function MarketHeader({
+  account,
+  demandKind,
+}: {
+  account: React.ReactNode
+  demandKind?: DemandKind
+}) {
   const t = useTranslations('market')
   const locale = useLocale()
   return (
-    <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">
-      <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-6 py-3">
-        <Link href={`/${locale}`} className="text-primary font-semibold">
-          {t('brand')}
-        </Link>
-        <MarketNav className="flex-1" demandKind={demandKind} />
-        <div className="flex items-center gap-3">{account}</div>
-      </header>
-      <main className="flex-1">{children}</main>
-    </div>
+    <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-6 py-3">
+      <Link href={`/${locale}`} className="text-primary font-semibold">
+        {t('brand')}
+      </Link>
+      <MarketNav className="flex-1" demandKind={demandKind} />
+      <div className="flex items-center gap-3">{account}</div>
+    </header>
   )
 }
