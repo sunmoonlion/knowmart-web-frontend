@@ -383,6 +383,8 @@
         "withdrawn": "已撤回",
         "rejected": "已驳回"
       },
+      "adoptCategory": "采纳建议「{name}」",
+      "methodCategory": "方法细类",
       "formalScope": {
         "public": "公开",
         "self": "自用"

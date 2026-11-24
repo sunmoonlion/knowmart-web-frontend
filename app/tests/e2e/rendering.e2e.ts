@@ -156,7 +156,7 @@ test('opens each publishing section from the marketplace and preserves old deman
   await expect(page.getByLabel('标题', { exact: true })).toHaveValue('')
 })
 
-test('market navigation comes before method types, and only expert methods offer business categories', async ({
+test('market navigation comes before method types, and tool and expert subcategories survive navigation', async ({
   context,
   page,
 }) => {
@@ -173,28 +173,28 @@ test('market navigation comes before method types, and only expert methods offer
   await page.route('**/api/web/v1/knowmart/method-directory?**', (route) => {
     const query = new URL(route.request().url()).searchParams
     const tool = query.get('kind') === 'tool'
-    const cat = {
-      group: 'finance',
-      group_name: '金融',
-      code: 'finance.private_fund',
-      name: '私募基金',
-    }
+    const cat = tool
+      ? { group: 'results', group_name: '结果处理', code: 'results.aggregate', name: '汇总与报告' }
+      : {
+          group: 'finance',
+          group_name: '金融',
+          code: 'finance.private_fund',
+          name: '私募基金',
+        }
     return route.fulfill({
       json: {
         contract_version: 1,
         total: 1,
         page: 1,
         page_size: 24,
-        categories: tool
-          ? []
-          : [
-              {
-                group: 'finance',
-                group_name: '金融',
-                count: 1,
-                children: [{ code: cat.code, name: cat.name, count: 1 }],
-              },
-            ],
+        categories: [
+          {
+            group: cat.group,
+            group_name: cat.group_name,
+            count: 1,
+            children: [{ code: cat.code, name: cat.name, count: 1 }],
+          },
+        ],
         items: [
           {
             listing_id: '487a3543-e970-4a7b-ae67-57785c918c44',
@@ -221,7 +221,8 @@ test('market navigation comes before method types, and only expert methods offer
   expect((await nav.boundingBox())!.y).toBeLessThan((await kinds.boundingBox())!.y)
   await kinds.getByRole('button', { name: '工具方法' }).click()
   await expect(page.getByRole('heading', { name: '核验结果汇总' })).toBeVisible()
-  await expect(page.getByRole('navigation', { name: '类目' })).toHaveCount(0)
+  await page.getByRole('button', { name: '汇总与报告' }).click()
+  await expect(page).toHaveURL(/category=results.aggregate/)
   await expect(page.getByText('专家方向演示')).toHaveCount(0)
   await page.reload()
   await expect(page.getByRole('heading', { name: '核验结果汇总' })).toBeVisible()

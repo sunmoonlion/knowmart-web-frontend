@@ -134,7 +134,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
           />
         </form>
       </div>
-      {filters.kind === 'expert' && (
+      {tree.length > 0 && (
         <nav aria-label={t('categories')} className="flex gap-1 overflow-x-auto border-b px-6 py-2">
           <TopTab active={group === null} onClick={() => go({ category: null })}>
             {t('all')}
@@ -151,7 +151,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
         </nav>
       )}
 
-      {filters.kind === 'expert' && sideGroups.length > 0 && (
+      {sideGroups.length > 0 && (
         <label className="flex items-center gap-2 px-6 pt-2 text-sm md:hidden">
           {t('subcategory')}
           <select
@@ -175,7 +175,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
         </label>
       )}
       <div className="flex min-h-0 flex-1">
-        {filters.kind === 'expert' &&
+        {tree.length > 0 &&
           (collapsed ? (
             <aside
               className="flex w-10 shrink-0 flex-col items-center border-r py-3"
@@ -320,8 +320,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
                         <h2 className="font-semibold">{item.name}</h2>
                         <p className="text-sm">{item.tagline}</p>
                         <p className="text-muted-foreground text-xs">
-                          {item.method_kind === 'expert' && item.category.name + ' · '}
-                          {t('version', { version: item.reference.version })}
+                          {item.category.name} ·{t('version', { version: item.reference.version })}
                         </p>
                         <details className="text-sm">
                           <summary>{t('versionIdentity')}</summary>

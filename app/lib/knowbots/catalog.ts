@@ -35,7 +35,7 @@ const CATEGORY = /^[a-z_.]{1,64}$/
 // 地址里不认识的值当作没写，用默认
 export function filtersFrom(search: URLSearchParams): CatalogFilters {
   const kind = search.get('kind') === 'tool' ? 'tool' : 'expert'
-  const category = kind === 'expert' ? search.get('category') : null
+  const category = search.get('category')
   const page = Number.parseInt(search.get('page') ?? '1', 10)
   const pick = <T extends string>(key: string, allowed: Set<string>, fallback: T): T => {
     const value = search.get(key)
@@ -59,7 +59,7 @@ export function filtersTo(filters: CatalogFilters, keep: URLSearchParams): URLSe
     if (value !== null) out.set(key, value)
   }
   if (filters.kind === 'tool') out.set('kind', 'tool')
-  if (filters.category && filters.kind !== 'tool') out.set('category', filters.category)
+  if (filters.category) out.set('category', filters.category)
   if (filters.q.trim()) out.set('q', filters.q.trim())
   if (filters.updated !== 'any') out.set('updated', filters.updated)
   if (filters.sort !== 'updated') out.set('sort', filters.sort)

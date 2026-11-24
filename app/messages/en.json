@@ -383,6 +383,8 @@
         "withdrawn": "Withdrawn",
         "rejected": "Rejected"
       },
+      "adoptCategory": "Apply suggestion · {name}",
+      "methodCategory": "Method category",
       "formalScope": {
         "public": "Public",
         "self": "Self-use"

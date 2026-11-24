@@ -294,11 +294,20 @@ const pin = z.object({
 export const fetchOwnFormalListings = (after: string | null) =>
   get(
     z.object({
+      directory_categories: z
+        .record(
+          z.enum(['tool', 'expert']),
+          z.array(z.object({ code: z.string(), group_name: z.string(), name: z.string() })),
+        )
+        .optional(),
       items: z.array(
         z.object({
           listing_id: z.uuid(),
           reference: pin,
           title: z.string(),
+          method_kind: z.enum(['tool', 'expert']).nullish(),
+          editable_category: z.string().nullish(),
+          suggested_category: z.string().nullish(),
           scope: z.enum(['self', 'public']),
           status: z.enum(['listed', 'pending', 'withdrawn', 'rejected']),
         }),
@@ -306,6 +315,14 @@ export const fetchOwnFormalListings = (after: string | null) =>
       next: z.uuid().nullable(),
     }),
     '/formal-methods/listings' + query({ after }),
+  )
+export const classifyMethod = (csrfToken: string, id: string, code: string) =>
+  send(
+    z.object({ code: z.string() }),
+    `/formal-methods/listings/${seg(id)}/directory-category`,
+    csrfToken,
+    { code },
+    'PUT',
   )
 export const withdrawFormalListing = (csrfToken: string, id: string) =>
   send(
