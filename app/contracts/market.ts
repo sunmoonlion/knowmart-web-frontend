@@ -206,7 +206,8 @@ export const tradeSchema = z
       .nullable()
       .optional(),
     shop: shopRefSchema.nullable().optional(),
-    listing_state: z.enum(['on', 'off']).optional(),
+    listing_state: z.enum(['on', 'off', 'revoked']).optional(),
+    expert_link_available: z.boolean().optional(),
   })
   .loose()
 export type Trade = z.infer<typeof tradeSchema>

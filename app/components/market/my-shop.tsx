@@ -817,6 +817,7 @@ function TradeLinks({ trade, role }: { trade: Trade; role: 'buyer' | 'seller' })
   const t = useTranslations('marketUi')
   const locale = useLocale()
   if (trade.kind === 'expert') {
+    if (!trade.expert_link_available) return null
     if (role === 'seller') {
       return (
         <Link

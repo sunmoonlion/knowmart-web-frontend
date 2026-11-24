@@ -472,7 +472,7 @@ describe('供需市场', () => {
     ).toBeInTheDocument()
   })
 
-  it('交易记录：买家评分；请过的专家直达 knowbench，已下架的标不可请', async () => {
+  it('交易记录：退役专家标不可请，买家可评价成交', async () => {
     vi.mocked(client.fetchTrades).mockResolvedValue({
       items: [
         {
@@ -490,6 +490,7 @@ describe('供需市场', () => {
           seller_publisher: { name: '张三工作室', kind: 'individual' },
           shop: SHOP,
           listing_state: 'off',
+          expert_link_available: false,
         },
       ],
     })
@@ -502,10 +503,7 @@ describe('供需市场', () => {
       'href',
       '/zh-CN/shops/s1',
     )
-    const open = await screen.findByRole('link', { name: '去 knowbench「专家」请' })
-    expect(open.getAttribute('href')).toBe(
-      'https://knowbench.example.test/zh-CN/workbench/expert?from=knowmart',
-    )
+    expect(screen.queryByRole('link', { name: '去 knowbench「专家」请' })).toBeNull()
     const form = within(await screen.findByRole('form', { name: '评价' }))
     fireEvent.change(form.getByLabelText('评分'), { target: { value: '4' } })
     fireEvent.change(form.getByLabelText('说一句'), { target: { value: '好用' } })
