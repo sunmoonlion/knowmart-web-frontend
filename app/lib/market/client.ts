@@ -398,22 +398,6 @@ export const withdrawFormalListing = (csrfToken: string, id: string) =>
     undefined,
     'DELETE',
   )
-export const fetchIncubationPermissions = (after: string | null) =>
-  get(
-    z.object({
-      items: z.array(
-        z.object({
-          listing_id: z.uuid(),
-          title: z.string(),
-          reference: pin,
-          scope: incubationScope,
-          listed: z.boolean(),
-        }),
-      ),
-      next: z.uuid().nullable(),
-    }),
-    '/formal-methods/incubation-permissions' + query({ after }),
-  )
 export const setIncubationPermission = (csrfToken: string, id: string, scope: IncubationScope) =>
   send(
     z.object({ listing_id: z.uuid(), reference: pin, scope: incubationScope }),

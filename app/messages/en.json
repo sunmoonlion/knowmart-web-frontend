@@ -427,8 +427,6 @@
         "self": "Self-use"
       },
       "incubation": "Incubation permissions",
-      "incubationHint": "Choose who may use each listed version as a step during incubation.",
-      "noIncubationListings": "No published versions on this page.",
       "scopeNone": "No cross-author use",
       "scopeAcquired": "Authors who acquired this version",
       "scopePlatform": "All platform authors",

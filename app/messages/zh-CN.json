@@ -427,8 +427,6 @@
         "self": "自用"
       },
       "incubation": "孵化引用许可",
-      "incubationHint": "逐版设置哪些作者可以在孵化时把它用作步骤。",
-      "noIncubationListings": "本页没有可管理的公开版本。",
       "scopeNone": "关闭跨作者引用",
       "scopeAcquired": "已获取此版本的作者",
       "scopePlatform": "平台所有作者",

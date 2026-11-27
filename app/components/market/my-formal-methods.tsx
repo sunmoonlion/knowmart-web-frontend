@@ -38,7 +38,6 @@ export function MyFormalMethods({
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({ queryKey: ['my-formal-listings'] }),
-      client.invalidateQueries({ queryKey: ['incubation-permissions'] }),
       client.invalidateQueries({ queryKey: ['web', 'experts'] }),
       client.invalidateQueries({ queryKey: ['market', 'my-shop'] }),
     ])
