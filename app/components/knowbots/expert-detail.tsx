@@ -326,30 +326,15 @@ function Body({
                       {t('deliveredAt', { date: date(row.v.delivered_at) })}
                     </span>
                   </span>
-                  {expert.owned && row.v.status === 'active' ? (
-                    expert.stop_in === 'knowlab' ? (
-                      // knowlab 交来的到 knowlab 停：专家的一生记在那边，两边才对得上
-                      <CrossAppLink
-                        to="knowlab.listed"
-                        className="text-primary text-sm underline-offset-4 hover:underline"
-                        fallback={
-                          <span className="text-muted-foreground text-xs">
-                            {t('stopInKnowlab')}
-                          </span>
-                        }
-                      >
-                        {t('stopInKnowlabLink')}
-                      </CrossAppLink>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={stopping}
-                        onClick={() => onStop(row.v.version)}
-                      >
-                        {t('stop')}
-                      </Button>
-                    )
+                  {expert.owned && expert.can_stop_here && row.v.status === 'active' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={stopping}
+                      onClick={() => onStop(row.v.version)}
+                    >
+                      {t('stop')}
+                    </Button>
                   ) : null}
                 </li>
               ),

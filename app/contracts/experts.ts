@@ -240,8 +240,7 @@ export const expertDetailSchema = z
               .strict(),
           )
           .default([]),
-        // 停用在哪儿做：knowlab 交来的到 knowlab 停（专家的一生记在 knowlab）
-        stop_in: z.enum(['here', 'knowlab']).default('here'),
+        can_stop_here: z.boolean(),
         sections: z
           .object({
             can_do: z.array(labelled),
