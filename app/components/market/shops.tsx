@@ -110,6 +110,7 @@ export function ShopList({ account }: { account: React.ReactNode }) {
                     knowledge: shop.knowledge,
                     demands: shop.demands,
                   })}
+                  {shop.tools ? ` · ${t('shops.toolsCount', { tools: shop.tools })}` : ''}
                 </p>
                 {shop.categories.length > 0 ? (
                   <p className="flex flex-wrap gap-1">
@@ -189,7 +190,27 @@ export function ShopScreen({ account, shopId }: { account: React.ReactNode; shop
             </header>
             {data.shop.status === 'open' ? (
               <>
-                <Section title={t('shops.experts')} empty={data.experts.length === 0}>
+                <Section
+                  title={t('shops.experts')}
+                  empty={
+                    data.experts.length === 0 && (data.formal_methods ?? []).length === 0
+                  }
+                >
+                  {(data.formal_methods ?? []).map((method) => (
+                    <li key={method.listing_id} className="space-y-1 px-4 py-3">
+                      <Link
+                        href={`/${locale}/knowbots/formal/${method.listing_id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {method.title}
+                      </Link>
+                      <p className="text-muted-foreground text-sm">{method.purpose}</p>
+                      <p className="flex flex-wrap items-center gap-2 text-xs">
+                        <Badge>{method.category.name}</Badge>
+                        <Price value={method.price} />
+                      </p>
+                    </li>
+                  ))}
                   {data.experts.map((bot) => (
                     <li key={bot.knowbot_id} className="space-y-1 px-4 py-3">
                       <Link

@@ -8,8 +8,20 @@ import { defineDestinations } from '@/lib/cross-app/links'
 export const destinations = defineDestinations({
   // 「去工作台请」：不是从工作台来时，带去工作台主页的「专家」；在那里点「请我的分身」再回来选（SDD 0032）
   'knowbench.expert': { target: 'knowbench', segments: ['workbench'], params: ['mode'] },
+  'knowbench.summonFormal': {
+    target: 'knowbench',
+    segments: ['workbench'],
+    params: ['mode', 'formal_method'],
+  },
+  'knowbench.methods': { target: 'knowbench', segments: ['workbench', 'methods'] },
   // 停用 knowlab 交来的专家：到 knowlab web端「专家」栏（SDD 0037 第六节）
   'knowlab.experts': { target: 'knowlab', segments: ['experts'] },
+  'knowlab.studio': { target: 'knowlab', segments: ['studio'] },
+  'knowlab.methods': {
+    target: 'knowlab',
+    segments: ['methods'],
+    params: ['method_id', 'version'],
+  },
   // 小店「交易记录」直达那份资料：knowbase web端总栏（买来的 / 我上传的），带资料编号
   // （SDD 0018 第十一节第 7 之二小节）。knowbase 那页的路径与参数以 knowbase web端（0044）落地为准
   'knowbase.library': {

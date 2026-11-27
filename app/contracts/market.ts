@@ -139,7 +139,7 @@ export const responseSchema = z
   .object({
     response_id: z.string(),
     demand_id: z.string(),
-    listing_kind: z.enum(['expert', 'knowledge']).nullable(),
+    listing_kind: z.enum(['expert', 'knowledge', 'formal_expert', 'formal_tool']).nullable(),
     listing_ref: z.string().nullable(),
     proposal: z.string(),
     price: money,
@@ -183,7 +183,7 @@ export type Material = z.infer<typeof materialSchema>
 export const tradeSchema = z
   .object({
     trade_id: z.string(),
-    kind: z.enum(['expert', 'knowledge']),
+    kind: z.enum(['expert', 'knowledge', 'formal_expert', 'formal_tool']),
     listing_ref: z.string(),
     title: z.string(),
     price: money,
@@ -271,6 +271,7 @@ export type ShopHeader = z.infer<typeof shopHeaderSchema>
 // 首页的一家店：在架专家、在架知识、公开需求各几样，供给的类目，最近一次改动
 export const shopCardSchema = shopHeaderSchema.extend({
   experts: z.number(),
+  tools: z.number().optional(),
   knowledge: z.number(),
   demands: z.number(),
   categories: z.array(category),
@@ -294,10 +295,32 @@ export const shopPageSchema = z
         })
         .loose(),
     ),
+    formal_methods: z
+      .array(
+        z
+          .object({
+            listing_id: z.string(),
+            reference: z.object({
+              method_id: z.string(),
+              version: z.number(),
+              digest: z.string(),
+            }),
+            method_kind: z.enum(['tool', 'expert']),
+            title: z.string(),
+            purpose: z.string(),
+            category,
+            price: money,
+          })
+          .loose(),
+      )
+      .optional(),
     knowledge: z.array(listingSchema),
     demands: z.array(demandSchema),
     reviews: z.array(
-      reviewSchema.extend({ title: z.string(), kind: z.enum(['expert', 'knowledge']) }),
+      reviewSchema.extend({
+        title: z.string(),
+        kind: z.enum(['expert', 'knowledge', 'formal_expert', 'formal_tool']),
+      }),
     ),
     rating,
   })

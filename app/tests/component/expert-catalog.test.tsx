@@ -161,6 +161,9 @@ describe('专家目录首页', () => {
     expect(nav.replace).toHaveBeenLastCalledWith(
       '/zh-CN/knowbots?category=finance&q=%E9%A2%84%E6%B5%8B',
     )
+    expect(screen.getByRole('searchbox')).toHaveValue('预测')
+    fireEvent.click(screen.getByRole('button', { name: '去掉「预测」' }))
+    expect(screen.getByRole('searchbox')).toHaveValue('')
     fireEvent.click(screen.getByRole('button', { name: '重置筛选' }))
     expect(nav.replace).toHaveBeenLastCalledWith('/zh-CN/knowbots')
   })

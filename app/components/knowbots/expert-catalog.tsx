@@ -1,17 +1,18 @@
 'use client'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PanelLeftCloseIcon, PanelLeftOpenIcon, XIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { DemoExpertGallery } from '@/components/knowbots/demo-expert-gallery'
 import { CrossAppLink } from '@/components/common/cross-app-link'
 import { MarketHeader } from '@/components/market/market-shell'
+import { Price, ShopLink } from '@/components/market/parts'
 import { Button } from '@/components/ui/button'
-import type { CategoryTree, ExpertItem } from '@/contracts/experts'
+import type { CatalogFormalMethod, CategoryTree, ExpertItem } from '@/contracts/experts'
 import { useCrossAppOrigin } from '@/lib/cross-app/use-cross-app'
 import {
   DEFAULT_FILTERS,
@@ -22,6 +23,7 @@ import {
 } from '@/lib/knowbots/catalog'
 import { summonReturnUrl } from '@/lib/knowbots/client'
 import { leaveTo } from '@/lib/leave-to'
+import { acquireFormalListing, formalSummonReturnUrl } from '@/lib/market/client'
 import { cn } from '@/lib/utils'
 
 const COLLAPSED_KEY = 'knowmart.catalog.collapsed'
@@ -63,11 +65,19 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
   })
   const origin = useCrossAppOrigin()
   const summoning = origin.data?.return_url ? origin.data : null
+  const queryClient = useQueryClient()
   const [failed, setFailed] = useState<string | null>(null)
   const collapsed = useSyncExternalStore(watchCollapsed, readCollapsed, () => false)
   const [words, setWords] = useState(filters.q)
 
+  useEffect(() => {
+    setWords(filters.q)
+  }, [filters.q])
+
   const go = (next: Partial<CatalogFilters>) => {
+    if ('q' in next && next.q !== undefined) {
+      setWords(next.q)
+    }
     // 换了条件就回到第一页，除非这次换的就是页码
     const merged = { ...filters, ...('page' in next ? {} : { page: 1 }), ...next }
     const query = filtersTo(merged, new URLSearchParams(search.toString()))
@@ -87,6 +97,17 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
       summonReturnUrl(knowbotId, version, { app: summoning!.app, ref: summoning!.ref }, csrfToken),
     onSuccess: (url) => leaveTo(url),
     onError: () => setFailed(t('summonFailed')),
+  })
+  const summonFormal = useMutation({
+    mutationFn: (listingId: string) =>
+      formalSummonReturnUrl(csrfToken, listingId, { app: summoning!.app, ref: summoning!.ref }),
+    onSuccess: (url) => leaveTo(url),
+    onError: () => setFailed(t('summonFailed')),
+  })
+  const acquireFormal = useMutation({
+    mutationFn: (listingId: string) => acquireFormalListing(csrfToken, listingId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['web', 'experts'] }),
+    onError: () => setFailed(t('acquireFailed')),
   })
 
   const tree: CategoryTree = list.data?.categories ?? []
@@ -316,19 +337,20 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
                 {list.data.items.map((item) =>
                   'listing_id' in item ? (
                     <li key={item.listing_id}>
-                      <article className="h-full space-y-2 rounded-lg border p-4">
-                        <h2 className="font-semibold">{item.name}</h2>
-                        <p className="text-sm">{item.tagline}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {item.category.name} ·{t('version', { version: item.reference.version })}
-                        </p>
-                        <details className="text-sm">
-                          <summary>{t('versionIdentity')}</summary>
-                          <code className="break-all">
-                            {item.reference.method_id} · {item.reference.digest}
-                          </code>
-                        </details>
-                      </article>
+                      <FormalMethodCard
+                        item={item}
+                        href={`/${locale}/knowbots/formal/${item.listing_id}${detailQuery.size ? `?${detailQuery}` : ''}`}
+                        summoning={summoning !== null && item.method_kind === 'expert'}
+                        busy={summonFormal.isPending || acquireFormal.isPending}
+                        onSummon={() => {
+                          setFailed(null)
+                          summonFormal.mutate(item.listing_id)
+                        }}
+                        onAcquire={() => {
+                          setFailed(null)
+                          acquireFormal.mutate(item.listing_id)
+                        }}
+                      />
                     </li>
                   ) : (
                     <li key={item.knowbot_id}>
@@ -416,6 +438,103 @@ function Choice({
         ))}
       </select>
     </label>
+  )
+}
+
+function FormalMethodCard({
+  item,
+  href,
+  summoning,
+  busy,
+  onSummon,
+  onAcquire,
+}: {
+  item: CatalogFormalMethod
+  href: string
+  summoning: boolean
+  busy: boolean
+  onSummon: () => void
+  onAcquire: () => void
+}) {
+  const t = useTranslations('experts')
+  const returns = item.public_contract?.what_to_return ?? []
+  const inputsCount = item.public_contract?.public_inputs.length ?? 0
+  const v0Count = item.public_contract?.v0_check_kinds.length ?? 0
+  const ready = Boolean(item.owned || item.acquired)
+  const formalParam = `${item.reference.method_id}@${item.reference.version}`
+
+  return (
+    <article className="hover:border-primary/60 relative flex h-full flex-col gap-2 rounded-lg border p-4">
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="font-semibold">
+          <Link href={href} className="after:absolute after:inset-0 hover:underline">
+            {item.name}
+          </Link>
+        </h2>
+        <span className="bg-muted text-muted-foreground shrink-0 rounded px-2 py-0.5 text-xs">
+          {t(item.method_kind === 'tool' ? 'toolMethod' : 'expertMethod')}
+        </span>
+      </div>
+      {item.tagline ? <p className="line-clamp-2 text-sm">{item.tagline}</p> : null}
+      <div className="flex flex-wrap items-center gap-1.5 text-xs">
+        {returns.slice(0, 2).map((slot) => (
+          <span key={slot.name} className="bg-muted rounded px-2 py-0.5">
+            {slot.domain_label ?? slot.name}
+          </span>
+        ))}
+        {inputsCount > 0 ? (
+          <span className="text-muted-foreground">{t('inputsCount', { count: inputsCount })}</span>
+        ) : null}
+        {v0Count > 0 ? (
+          <span className="text-muted-foreground">{t('v0Count', { count: v0Count })}</span>
+        ) : null}
+      </div>
+      <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs tabular-nums">
+        <span>
+          {item.category.name} · {t('version', { version: item.reference.version })}
+        </span>
+        {item.price !== undefined ? <Price value={item.price} /> : null}
+      </p>
+      <div className="relative z-10 mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
+        {item.shop ? <ShopLink shop={item.shop} /> : <span />}
+        <div className="flex flex-wrap items-center gap-2">
+          {summoning ? (
+            <Button size="sm" disabled={busy} onClick={onSummon}>
+              {t('summon')}
+            </Button>
+          ) : item.method_kind === 'expert' ? (
+            ready ? (
+              <CrossAppLink
+                to="knowbench.summonFormal"
+                values={{ mode: 'expert', formal_method: formalParam }}
+                className="text-primary text-sm underline-offset-4 hover:underline"
+              >
+                {t('goWorkbench')}
+              </CrossAppLink>
+            ) : (
+              <Button size="sm" variant="outline" disabled={busy} onClick={onAcquire}>
+                {t('acquireExpert')}
+              </Button>
+            )
+          ) : ready ? (
+            <CrossAppLink
+              to="knowlab.methods"
+              values={{
+                method_id: item.reference.method_id,
+                version: String(item.reference.version),
+              }}
+              className="text-primary text-sm underline-offset-4 hover:underline"
+            >
+              {t('useInKnowlab')}
+            </CrossAppLink>
+          ) : (
+            <Button size="sm" variant="outline" disabled={busy} onClick={onAcquire}>
+              {t('acquireTool')}
+            </Button>
+          )}
+        </div>
+      </div>
+    </article>
   )
 }
 

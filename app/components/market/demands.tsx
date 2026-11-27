@@ -323,10 +323,13 @@ function ResponseCard({
   })
   // 选中了、当初没附条目：做好上架再补附（Fable 评审 P2-9）
   const [ref, setRef] = useState('')
+  const [offerKind, setOfferKind] = useState<'knowledge' | 'expert' | 'formal_expert' | 'formal_tool'>(
+    demand.kind === 'knowledge' ? 'knowledge' : 'formal_expert',
+  )
   const attach = useMutation({
     mutationFn: () =>
       attachOffer(csrfToken, response.response_id, {
-        listing_kind: demand.kind,
+        listing_kind: demand.kind === 'knowledge' ? 'knowledge' : offerKind,
         listing_ref: ref.trim(),
       }),
     onSuccess: onChanged,
@@ -336,7 +339,11 @@ function ResponseCard({
       ? `/${locale}/knowledge/${response.listing_ref}${response.status === 'chosen' && demand.mine ? `?demand=${demand.demand_id}` : ''}`
       : response.listing_kind === 'expert' && response.listing_ref
         ? `/${locale}/knowbots/${response.listing_ref.split('@')[0]}`
-        : null
+        : (response.listing_kind === 'formal_expert' || response.listing_kind === 'formal_tool') &&
+            response.listing_ref &&
+            !response.listing_ref.includes('@')
+          ? `/${locale}/knowbots/formal/${response.listing_ref}${response.status === 'chosen' && demand.mine ? `?demand=${demand.demand_id}` : ''}`
+          : null
   return (
     <article className="space-y-2 rounded-xl border p-4 text-sm" aria-label={t('responseFrom')}>
       <p className="flex flex-wrap items-center gap-2">
@@ -362,6 +369,21 @@ function ResponseCard({
       ) : null}
       {response.mine && response.status === 'chosen' && !response.listing_ref ? (
         <div className="flex flex-wrap items-end gap-2">
+          {demand.kind === 'expert' ? (
+            <Field label={t('category')}>
+              <select
+                className={inputClass}
+                value={offerKind}
+                onChange={(e) =>
+                  setOfferKind(e.target.value as 'expert' | 'formal_expert' | 'formal_tool')
+                }
+              >
+                <option value="formal_expert">{t('kind.formal_expert')}</option>
+                <option value="formal_tool">{t('kind.formal_tool')}</option>
+                <option value="expert">{t('kind.expert')}</option>
+              </select>
+            </Field>
+          ) : null}
           <Field
             label={demand.kind === 'knowledge' ? t('attachKnowledge') : t('attachExpert')}
             hint={t('attachLater')}

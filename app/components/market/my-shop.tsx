@@ -29,16 +29,13 @@ import {
 } from '@/lib/market/client'
 
 import { MyFormalMethods } from './my-formal-methods'
-import { IncubationPermissions } from './incubation-permissions'
 import { MarketShell } from './market-shell'
 import { Badge, Field, inputClass, Price, Problem, Stars } from './parts'
 import { PublisherPanel } from './publisher'
 
 type Props = { csrfToken: string; account: React.ReactNode }
 const TABS = [
-  'experts',
   'formalMethods',
-  'incubation',
   'knowledge',
   'demands',
   'responses',
@@ -91,17 +88,23 @@ function Tabs<T extends string>({
 // 供给（我的专家、我的知识）、需求（我的需求、我给别人的响应）、交易记录、店主资料
 export function MyShopScreen({ csrfToken, account }: Props) {
   const t = useTranslations('marketUi')
-  const [tab, setTab] = useState<Tab>('experts')
+  const [tab, setTab] = useState<Tab>('formalMethods')
   const shop = useQuery({ queryKey: ['market', 'my-shop'] as const, queryFn: fetchMyShop })
   return (
     <MarketShell account={account}>
       <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-8">
         <ShopHead shop={shop.data} error={shop.error} />
         <Tabs tabs={TABS} value={tab} onChange={setTab} label={(x) => t(`myShop.${x}`)} />
-        {tab === 'experts' ? <MyExperts csrfToken={csrfToken} /> : null}
-        {tab === 'formalMethods' ? <MyFormalMethods csrfToken={csrfToken} /> : null}
-        {tab === 'incubation' ? (
-          <IncubationPermissions csrfToken={csrfToken} platform={!!shop.data?.shop.platform} />
+        {tab === 'formalMethods' ? (
+          <div className="space-y-8">
+            <MyFormalMethods csrfToken={csrfToken} platform={!!shop.data?.shop.platform} />
+            <details className="rounded-xl border p-4">
+              <summary className="cursor-pointer text-sm font-medium">{t('myShop.experts')}</summary>
+              <div className="pt-3">
+                <MyExperts csrfToken={csrfToken} />
+              </div>
+            </details>
+          </div>
         ) : null}
         {tab === 'knowledge' ? <MyListings csrfToken={csrfToken} /> : null}
         {tab === 'demands' ? <MyDemands /> : null}
@@ -816,6 +819,32 @@ function ShopLinkInline({ trade }: { trade: Trade }) {
 function TradeLinks({ trade, role }: { trade: Trade; role: 'buyer' | 'seller' }) {
   const t = useTranslations('marketUi')
   const locale = useLocale()
+  if (trade.kind === 'formal_expert' || trade.kind === 'formal_tool') {
+    const listingId = trade.granted[0]?.item_id
+    if (role === 'seller' && listingId) {
+      return (
+        <Link
+          href={`/${locale}/knowbots/formal/${listingId}`}
+          className="text-primary text-xs hover:underline"
+        >
+          {t('bought.openOwnExpert')}
+        </Link>
+      )
+    }
+    return trade.kind === 'formal_expert' ? (
+      <CrossAppLink
+        to="knowbench.summonFormal"
+        values={{ mode: 'expert', formal_method: trade.listing_ref }}
+        className="text-primary text-xs hover:underline"
+      >
+        {t('bought.openExpert')}
+      </CrossAppLink>
+    ) : (
+      <CrossAppLink to="knowbench.methods" className="text-primary text-xs hover:underline">
+        {t('bought.openExpert')}
+      </CrossAppLink>
+    )
+  }
   if (trade.kind === 'expert') {
     if (!trade.expert_link_available) return null
     if (role === 'seller') {

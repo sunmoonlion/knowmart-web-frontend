@@ -55,6 +55,26 @@ export const expertListSchema = z
   })
   .strict()
 
+const publicSlotSummarySchema = z
+  .object({
+    name: z.string(),
+    description: z.string(),
+    required: z.boolean(),
+    schema_type: z.string(),
+    domain_id: z.string().nullish(),
+    domain_label: z.string().nullish(),
+  })
+  .loose()
+
+const publicAccessSummarySchema = z
+  .object({
+    capability_ref: z.string(),
+    operations: z.array(z.string()),
+    required_when: z.enum(['always', 'when_selected']).optional(),
+    approval_scope: z.enum(['envelope', 'per_action']).optional(),
+  })
+  .loose()
+
 const catalogMethod = z
   .object({
     listing_id: z.uuid(),
@@ -68,8 +88,114 @@ const catalogMethod = z
     tagline: z.string(),
     category: categorySchema,
     updated_at: z.string(),
+    scope: z.enum(['self', 'public']).optional(),
+    owned: z.boolean().optional(),
+    acquired: z.boolean().optional(),
+    price: z.string().nullable().optional(),
+    shop: z.object({ shop_id: z.string(), name: z.string() }).nullable().optional(),
+    public_contract: z
+      .object({
+        public_inputs: z.array(publicSlotSummarySchema).default([]),
+        what_to_return: z.array(publicSlotSummarySchema).default([]),
+        v0_check_kinds: z.array(z.string()).default([]),
+        has_blind_review: z.boolean().default(false),
+        per_action_approval_count: z.number().int().nonnegative().default(0),
+      })
+      .loose()
+      .optional(),
   })
-  .strict()
+  .loose()
+
+export type CatalogFormalMethod = z.infer<typeof catalogMethod>
+
+export const formalDetailSchema = z
+  .object({
+    contract_version: z.literal(1),
+    listing: z
+      .object({
+        listing_id: z.uuid(),
+        reference: z.object({
+          method_id: z.uuid(),
+          version: z.number().int().positive(),
+          digest: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+        }),
+        method_kind: z.enum(['tool', 'expert']),
+        title: z.string(),
+        purpose: z.string(),
+        scope: z.enum(['self', 'public']),
+        status: z.enum(['pending', 'listed', 'withdrawn', 'rejected', 'taken_down']),
+        owned: z.boolean(),
+        acquired: z.boolean(),
+        summonable: z.boolean(),
+        category: categorySchema,
+        regulated_category: categorySchema,
+        price: z.string().nullable(),
+        incubation_scope: z.enum(['none', 'acquired', 'platform']),
+        updated_at: z.string(),
+        public_contract: z
+          .object({
+            method_kind: z.enum(['tool', 'expert']),
+            title: z.string(),
+            purpose: z.string(),
+            applies_when: z.array(z.string()),
+            excludes: z.array(z.string()),
+            promises: z.record(z.string(), z.string()),
+            public_inputs: z.array(publicSlotSummarySchema),
+            what_to_return: z.array(publicSlotSummarySchema),
+            access_summary: z.array(publicAccessSummarySchema),
+            v0_check_kinds: z.array(z.string()),
+            has_blind_review: z.boolean(),
+            per_action_approval_count: z.number().int().nonnegative(),
+            domain_tags: z.array(z.string()).default([]),
+          })
+          .loose(),
+        versions: z.array(
+          z
+            .object({
+              listing_id: z.uuid(),
+              version: z.number().int().positive(),
+              scope: z.enum(['self', 'public']),
+              status: z.enum(['pending', 'listed', 'withdrawn', 'rejected', 'taken_down']),
+              updated_at: z.string(),
+            })
+            .loose(),
+        ),
+        shop: z.object({ shop_id: z.string(), name: z.string() }).nullable(),
+        publisher: z
+          .object({
+            name: z.string(),
+            kind: z.enum(['individual', 'organization']),
+            real_name_verified: z.boolean(),
+            licenses: z.array(
+              z
+                .object({
+                  name: z.string(),
+                  number: z.string(),
+                  valid_until: z.string().nullable(),
+                })
+                .loose(),
+            ),
+          })
+          .loose()
+          .nullable(),
+        reviews: z.array(
+          z
+            .object({
+              rating: z.number(),
+              text: z.string(),
+              reply: z.string().nullable(),
+              created_at: z.string().nullable(),
+              replied_at: z.string().nullable(),
+            })
+            .loose(),
+        ),
+        rating: z.object({ count: z.number(), average: z.number().nullable() }).loose(),
+      })
+      .loose(),
+  })
+  .loose()
+
+export type FormalMethodDetail = z.infer<typeof formalDetailSchema>['listing']
 
 export const methodDirectorySchema = expertListSchema.extend({
   items: z.array(z.union([itemSchema, catalogMethod])),

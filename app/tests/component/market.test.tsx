@@ -136,7 +136,7 @@ describe('供需市场', () => {
       confirm.mockRestore()
     }
   })
-  it('店主按版本开放和撤回已获取者的孵化引用许可', async () => {
+  it('店主按版本开放和撤回已获取者的孵化引用许可（仅限公开在架工具方法）', async () => {
     const ref = {
       method_id: '123e4567-e89b-42d3-a456-426614174000',
       version: 2,
@@ -145,8 +145,18 @@ describe('供需市场', () => {
     const listing = '123e4567-e89b-42d3-a456-426614174001'
     let scope: client.IncubationScope = 'none'
     vi.mocked(client.fetchMyExperts).mockResolvedValue({ items: [] })
-    vi.mocked(client.fetchIncubationPermissions).mockImplementation(async () => ({
-      items: [{ listing_id: listing, reference: ref, title: '核对', listed: true, scope }],
+    vi.mocked(client.fetchOwnFormalListings).mockImplementation(async () => ({
+      items: [
+        {
+          listing_id: listing,
+          reference: ref,
+          title: '核对',
+          scope: 'public' as const,
+          status: 'listed' as const,
+          method_kind: 'tool' as const,
+          incubation_scope: scope,
+        },
+      ],
       next: null,
     }))
     vi.mocked(client.setIncubationPermission).mockImplementation(async (_csrf, id, value) => {
@@ -154,7 +164,6 @@ describe('供需市场', () => {
       return { listing_id: id, reference: ref, scope }
     })
     page(<MyShopScreen csrfToken={CSRF} account={null} />)
-    fireEvent.click(screen.getByRole('tab', { name: messages.marketUi.myShop.incubation }))
     const select = await screen.findByRole('combobox', { name: /核对/ })
     expect(
       within(select).queryByRole('option', { name: messages.marketUi.myShop.scopePlatform }),
@@ -403,9 +412,10 @@ describe('供需市场', () => {
         },
       ],
     })
+    vi.mocked(client.fetchOwnFormalListings).mockResolvedValue({ items: [], next: null })
     vi.mocked(client.setExpertListing).mockResolvedValue({} as never)
     page(<MyShopScreen csrfToken={CSRF} account={null} />)
-    fireEvent.click(screen.getByRole('tab', { name: '我的专家' }))
+    fireEvent.click(screen.getByText('我的专家'))
     fireEvent.change(await screen.findByLabelText(/每次请/), { target: { value: '9.9' } })
     fireEvent.click(screen.getByRole('button', { name: '申请公开' }))
     await waitFor(() =>
@@ -419,6 +429,7 @@ describe('供需市场', () => {
 
   it('我的小店：没有类目的专家先选类目才能申请公开（Fable 评审 P2-1）', async () => {
     vi.mocked(client.fetchMyListings).mockResolvedValue({ items: [] })
+    vi.mocked(client.fetchOwnFormalListings).mockResolvedValue({ items: [], next: null })
     vi.mocked(client.fetchMyExperts).mockResolvedValue({
       items: [
         {
@@ -435,7 +446,7 @@ describe('供需市场', () => {
     })
     vi.mocked(client.setExpertListing).mockResolvedValue({} as never)
     page(<MyShopScreen csrfToken={CSRF} account={null} />)
-    fireEvent.click(screen.getByRole('tab', { name: '我的专家' }))
+    fireEvent.click(screen.getByText('我的专家'))
     const ask = await screen.findByRole('button', { name: '申请公开' })
     expect(ask).toBeDisabled()
     fireEvent.change(screen.getByLabelText('类目'), { target: { value: 'tools.lookup' } })
@@ -451,6 +462,7 @@ describe('供需市场', () => {
 
   it('我的小店：所绑数据失效的那一版待处理，写明原因（0043 第 4.3 节）', async () => {
     vi.mocked(client.fetchMyListings).mockResolvedValue({ items: [] })
+    vi.mocked(client.fetchOwnFormalListings).mockResolvedValue({ items: [], next: null })
     vi.mocked(client.fetchMyExperts).mockResolvedValue({
       items: [
         {
@@ -466,7 +478,7 @@ describe('供需市场', () => {
       ],
     })
     page(<MyShopScreen csrfToken={CSRF} account={null} />)
-    fireEvent.click(screen.getByRole('tab', { name: '我的专家' }))
+    fireEvent.click(screen.getByText('我的专家'))
     expect(
       await screen.findByText(/第 2 版待处理，别人现在请不了：你绑给这位专家的数据有一份删了/),
     ).toBeInTheDocument()

@@ -142,6 +142,35 @@
     "version": "Version {version}",
     "summon": "Use this",
     "summonFailed": "Could not go back to the workbench. Try again.",
+    "acquireFailed": "Could not acquire access. Please try again.",
+    "acquireExpert": "Acquire expert access",
+    "acquireTool": "Acquire tool access",
+    "useInKnowlab": "Reference in KnowLab",
+    "manageInKnowlab": "Manage versions in KnowLab",
+    "useInWorkbench": "Open in workbench",
+    "inputsCount": "{count} input(s)",
+    "v0Count": "{count} deterministic check(s)",
+    "formalTabs": {
+      "canDo": "Capabilities & Boundaries",
+      "inputs": "Inputs & Permissions",
+      "delivers": "Deliverables & Checks",
+      "versions": "Version Lineage",
+      "publisher": "Publisher & Reviews"
+    },
+    "formalContract": {
+      "promises": "Deliverable promises",
+      "appliesWhen": "Applies when",
+      "excludes": "Excluded scope",
+      "publicInputs": "Public input view (public_inputs)",
+      "noInputs": "No caller inputs required.",
+      "required": "Required",
+      "accessAndApproval": "Access & approval policy",
+      "envelopeApproval": "Envelope authorization: single upfront confirmation without per-step popups",
+      "perActionApproval": "{count} external write/send action(s) require per-action approval",
+      "whatToReturn": "Public return view (what_to_return)",
+      "blindReview": "Isolated blind review",
+      "switchVersion": "Open this version"
+    },
     "goWorkbench": "Use it in the workbench",
     "total": "{count} results",
     "prev": "Previous",
@@ -281,6 +310,8 @@
     },
     "kind": {
       "expert": "Expert",
+      "formal_expert": "Formal expert",
+      "formal_tool": "Formal tool",
       "knowledge": "Knowledge"
     },
     "role": {
@@ -357,6 +388,7 @@
       "sortName": "Name",
       "empty": "No shop has anything on show yet.",
       "counts": "Experts {experts} · Knowledge {knowledge} · Demands {demands}",
+      "toolsCount": "Tools {tools}",
       "platform": "Platform",
       "suspended": "This shop is suspended.",
       "experts": "Experts on show",
@@ -373,7 +405,7 @@
       "reviewOf": "{title}"
     },
     "myShop": {
-      "formalMethods": "Formal methods",
+      "formalMethods": "Methods and experts",
       "noFormalListings": "No formal method listings.",
       "withdrawFormal": "Withdraw listing",
       "confirmWithdrawFormal": "Withdraw {title} v{version} from the market? This stops new acquisitions.",
@@ -381,8 +413,13 @@
         "pending": "Pending",
         "listed": "Listed",
         "withdrawn": "Withdrawn",
-        "rejected": "Rejected"
+        "rejected": "Rejected",
+        "taken_down": "Taken down"
       },
+      "regulatedCategory": "Regulated category",
+      "chooseRegulatedCategory": "Select regulated category",
+      "formalPrice": "Price (¥, empty is free)",
+      "submitFormalPublic": "Submit for public review",
       "adoptCategory": "Apply suggestion · {name}",
       "methodCategory": "Method category",
       "formalScope": {

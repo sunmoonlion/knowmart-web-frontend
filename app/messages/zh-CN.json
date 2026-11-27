@@ -142,6 +142,35 @@
     "version": "第 {version} 版",
     "summon": "请这位",
     "summonFailed": "没能回到工作台，请再试一次。",
+    "acquireFailed": "获取使用权失败，请稍后重试。",
+    "acquireExpert": "获取专家使用权",
+    "acquireTool": "获取工具使用权",
+    "useInKnowlab": "去 KnowLab 编排引用",
+    "manageInKnowlab": "去 KnowLab 管理版本",
+    "useInWorkbench": "去工作台查看",
+    "inputsCount": "输入 {count} 项",
+    "v0Count": "确定性核验 {count} 项",
+    "formalTabs": {
+      "canDo": "能做什么",
+      "inputs": "输入与所需授权",
+      "delivers": "交付物与核验保障",
+      "versions": "版本谱系",
+      "publisher": "发布主体与评价"
+    },
+    "formalContract": {
+      "promises": "核心交付承诺",
+      "appliesWhen": "适用前提",
+      "excludes": "明确排除边界",
+      "publicInputs": "对外输入视图（public_inputs）",
+      "noInputs": "无需调用方传入参数。",
+      "required": "必填",
+      "accessAndApproval": "权限与审批策略",
+      "envelopeApproval": "包络一次预授权：准备页确认后运行期免连环弹窗",
+      "perActionApproval": "含 {count} 项外部写/发操作，执行时逐次弹窗确认",
+      "whatToReturn": "对外返回视图（what_to_return）",
+      "blindReview": "含独立盲审复核",
+      "switchVersion": "查看此版"
+    },
     "goWorkbench": "去工作台请",
     "total": "共 {count} 项",
     "prev": "上一页",
@@ -281,6 +310,8 @@
     },
     "kind": {
       "expert": "专家",
+      "formal_expert": "正式专家",
+      "formal_tool": "正式工具",
       "knowledge": "知识"
     },
     "role": {
@@ -357,6 +388,7 @@
       "sortName": "店名",
       "empty": "还没有有东西在架的小店。",
       "counts": "专家 {experts} · 知识 {knowledge} · 需求 {demands}",
+      "toolsCount": "工具 {tools}",
       "platform": "平台",
       "suspended": "这家小店已暂停营业。",
       "experts": "在架的专家",
@@ -373,7 +405,7 @@
       "reviewOf": "{title}"
     },
     "myShop": {
-      "formalMethods": "我的正式方法",
+      "formalMethods": "我的方法与专家",
       "noFormalListings": "暂无正式方法条目。",
       "withdrawFormal": "撤回条目",
       "confirmWithdrawFormal": "撤回「{title}」第 {version} 版市场条目？此条目将停止新的获取。",
@@ -381,8 +413,13 @@
         "pending": "待审核",
         "listed": "已上架",
         "withdrawn": "已撤回",
-        "rejected": "已驳回"
+        "rejected": "已驳回",
+        "taken_down": "被平台下架"
       },
+      "regulatedCategory": "监管准入类目",
+      "chooseRegulatedCategory": "选择监管类目",
+      "formalPrice": "参考标价（元，空为免费）",
+      "submitFormalPublic": "提交公开审核",
       "adoptCategory": "采纳建议「{name}」",
       "methodCategory": "方法细类",
       "formalScope": {

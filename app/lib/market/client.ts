@@ -4,6 +4,11 @@
 import { z } from 'zod'
 
 import {
+  formalDetailSchema,
+  type FormalMethodDetail,
+} from '@/contracts/experts'
+import { summonReturnSchema } from '@/contracts/knowbots'
+import {
   demandDetailSchema,
   demandSchema,
   documentSchema,
@@ -216,7 +221,7 @@ export const respond = (
   csrfToken: string,
   demandId: string,
   body: {
-    listing_kind: 'expert' | 'knowledge' | null
+    listing_kind: 'expert' | 'knowledge' | 'formal_expert' | 'formal_tool' | null
     listing_ref: string | null
     proposal: string
     price: string | null
@@ -242,7 +247,10 @@ export const withdrawResponse = (csrfToken: string, id: string) =>
 export const attachOffer = (
   csrfToken: string,
   id: string,
-  body: { listing_kind: 'knowledge' | 'expert'; listing_ref: string },
+  body: {
+    listing_kind: 'knowledge' | 'expert' | 'formal_expert' | 'formal_tool'
+    listing_ref: string
+  },
 ) =>
   send(
     z.object({ response: responseSchema }).loose(),
@@ -293,29 +301,87 @@ const pin = z.object({
 })
 export const fetchOwnFormalListings = (after: string | null) =>
   get(
-    z.object({
-      directory_categories: z
-        .record(
-          z.enum(['tool', 'expert']),
-          z.array(z.object({ code: z.string(), group_name: z.string(), name: z.string() })),
-        )
-        .optional(),
-      items: z.array(
-        z.object({
-          listing_id: z.uuid(),
-          reference: pin,
-          title: z.string(),
-          method_kind: z.enum(['tool', 'expert']).nullish(),
-          editable_category: z.string().nullish(),
-          suggested_category: z.string().nullish(),
-          scope: z.enum(['self', 'public']),
-          status: z.enum(['listed', 'pending', 'withdrawn', 'rejected']),
-        }),
-      ),
-      next: z.uuid().nullable(),
-    }),
+    z
+      .object({
+        regulated_categories: z
+          .array(
+            z
+              .object({
+                code: z.string(),
+                group_name: z.string(),
+                name: z.string(),
+                license: z.boolean().optional(),
+              })
+              .loose(),
+          )
+          .optional(),
+        directory_categories: z
+          .record(
+            z.enum(['tool', 'expert']),
+            z.array(z.object({ code: z.string(), group_name: z.string(), name: z.string() })),
+          )
+          .optional(),
+        items: z.array(
+          z
+            .object({
+              listing_id: z.uuid(),
+              reference: pin,
+              title: z.string(),
+              purpose: z.string().optional(),
+              method_kind: z.enum(['tool', 'expert']).nullish(),
+              category: z.string().optional(),
+              editable_category: z.string().nullish(),
+              suggested_category: z.string().nullish(),
+              price: z.string().nullish(),
+              incubation_scope: incubationScope.optional(),
+              review_note: z.string().nullish(),
+              delist_reason: z.string().nullish(),
+              scope: z.enum(['self', 'public']),
+              status: z.enum(['listed', 'pending', 'withdrawn', 'rejected', 'taken_down']),
+            })
+            .loose(),
+        ),
+        next: z.uuid().nullable(),
+      })
+      .loose(),
     '/formal-methods/listings' + query({ after }),
   )
+export const submitFormalListing = (
+  csrfToken: string,
+  body: {
+    reference: z.infer<typeof pin>
+    category: string
+    directory_category?: string | null
+    price?: string | null
+  },
+) =>
+  send(
+    z.object({ listing_id: z.uuid(), status: z.string() }).loose(),
+    '/formal-methods/listings',
+    csrfToken,
+    body,
+  )
+export const acquireFormalListing = (csrfToken: string, id: string, demandId?: string) =>
+  send(
+    z.object({ listing_id: z.uuid(), status: z.literal('acquired') }).loose(),
+    `/formal-methods/listings/${seg(id)}/acquisitions` + query({ demand_id: demandId }),
+    csrfToken,
+  )
+export const fetchFormalListingDetail = async (id: string): Promise<FormalMethodDetail> =>
+  (await get(formalDetailSchema, `/formal-methods/listings/${seg(id)}`)).listing
+export const formalSummonReturnUrl = async (
+  csrfToken: string,
+  id: string,
+  origin: { app: string; ref: string | null },
+): Promise<string> =>
+  (
+    await send(
+      summonReturnSchema,
+      `/formal-methods/listings/${seg(id)}/summon-return`,
+      csrfToken,
+      origin.ref === null ? { from: origin.app } : { from: origin.app, ref: origin.ref },
+    )
+  ).return_url
 export const classifyMethod = (csrfToken: string, id: string, code: string) =>
   send(
     z.object({ code: z.string() }),
