@@ -330,7 +330,7 @@ function Body({
                     expert.stop_in === 'knowlab' ? (
                       // knowlab 交来的到 knowlab 停：专家的一生记在那边，两边才对得上
                       <CrossAppLink
-                        to="knowlab.experts"
+                        to="knowlab.listed"
                         className="text-primary text-sm underline-offset-4 hover:underline"
                         fallback={
                           <span className="text-muted-foreground text-xs">

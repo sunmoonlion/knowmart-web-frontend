@@ -15,7 +15,7 @@ export const destinations = defineDestinations({
   },
   'knowbench.methods': { target: 'knowbench', segments: ['workbench', 'methods'] },
   // 停用 knowlab 交来的专家：到 knowlab web端「专家」栏（SDD 0037 第六节）
-  'knowlab.experts': { target: 'knowlab', segments: ['experts'] },
+  'knowlab.listed': { target: 'knowlab', segments: ['methods', 'listed'] },
   'knowlab.studio': { target: 'knowlab', segments: ['studio'] },
   'knowlab.methods': {
     target: 'knowlab',
