@@ -40,7 +40,9 @@ export function PublisherPanel({ csrfToken }: { csrfToken: string }) {
       ) : (
         <>
           <Identity csrfToken={csrfToken} mine={mine.data} />
-          {mine.data.publisher ? <Documents csrfToken={csrfToken} mine={mine.data} /> : null}
+          {mine.data.publisher ? (
+            <Documents key={mine.data.publisher.kind} csrfToken={csrfToken} mine={mine.data} />
+          ) : null}
           {mine.data.publisher ? <Licenses csrfToken={csrfToken} mine={mine.data} /> : null}
         </>
       )}
@@ -253,12 +255,15 @@ function Licenses({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher })
     valid_until: '',
     document_id: '',
   })
+  const ready =
+    photos.some((photo) => photo.document_id === form.document_id) &&
+    !!form.license_name.trim() &&
+    !!form.license_no.trim()
   const add = useMutation({
     mutationFn: () =>
       addLicense(csrfToken, {
         ...form,
         valid_until: form.valid_until || null,
-        document_id: form.document_id || photos[0]?.document_id || '',
       }),
     onSuccess: () => client.invalidateQueries({ queryKey: KEY }),
   })
@@ -289,7 +294,7 @@ function Licenses({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher })
           className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2"
           onSubmit={(event) => {
             event.preventDefault()
-            add.mutate()
+            if (ready && !add.isPending) add.mutate()
           }}
         >
           <Field label={t('category')}>
@@ -301,6 +306,20 @@ function Licenses({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher })
               {LICENSED_CATEGORIES.map((c) => (
                 <option key={c.code} value={c.code}>
                   {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t('publisher.licensePhoto')}>
+            <select
+              className={inputClass}
+              value={photos.some((p) => p.document_id === form.document_id) ? form.document_id : ''}
+              onChange={(e) => setForm({ ...form, document_id: e.target.value })}
+            >
+              <option value="">{t('publisher.selectPhoto')}</option>
+              {photos.map((photo) => (
+                <option key={photo.document_id} value={photo.document_id}>
+                  {photo.media_type} · {photo.created_at} · {photo.document_id}
                 </option>
               ))}
             </select>
@@ -330,11 +349,7 @@ function Licenses({ csrfToken, mine }: { csrfToken: string; mine: MyPublisher })
             />
           </Field>
           <div className="sm:col-span-2">
-            <Button
-              type="submit"
-              size="sm"
-              disabled={add.isPending || !form.license_name.trim() || !form.license_no.trim()}
-            >
+            <Button type="submit" size="sm" disabled={!ready || add.isPending}>
               {t('publisher.addLicense')}
             </Button>
             <Problem error={add.error} />

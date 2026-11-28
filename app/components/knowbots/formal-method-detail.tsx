@@ -18,6 +18,8 @@ import {
   fetchFormalListingDetail,
   formalSummonReturnUrl,
 } from '@/lib/market/client'
+import { ApiClientError } from '@/lib/common/api-client'
+import { filtersTo, filtersFrom } from '@/lib/knowbots/catalog'
 import { cn } from '@/lib/utils'
 
 type Tab = 'canDo' | 'inputs' | 'delivers' | 'versions' | 'publisher'
@@ -58,11 +60,9 @@ export function FormalMethodDetail({ listingId, csrfToken, account }: Props) {
     onError: () => setFailed(t('acquireFailed')),
   })
 
-  const back = new URLSearchParams()
-  for (const key of ['from', 'ref', 'kind']) {
-    const value = search.get(key)
-    if (value !== null) back.set(key, value)
-  }
+  const catalogParams = new URLSearchParams(search.toString())
+  const back = filtersTo(filtersFrom(catalogParams), catalogParams)
+  const common = useTranslations('common')
   const date = (value: string) =>
     value ? format.dateTime(new Date(value), { dateStyle: 'medium' }) : '—'
 
@@ -85,9 +85,18 @@ export function FormalMethodDetail({ listingId, csrfToken, account }: Props) {
         {detail.isPending ? (
           <p className="text-muted-foreground">{t('loading')}</p>
         ) : detail.isError || !item ? (
-          <p className="text-muted-foreground" role="alert">
-            {t('notFound')}
-          </p>
+          <div role="alert">
+            {detail.error instanceof ApiClientError && detail.error.status === 404 ? (
+              t('notFound')
+            ) : (
+              <>
+                <p>{t('loadFailed')}</p>
+                <Button variant="outline" onClick={() => void detail.refetch()}>
+                  {common('retry')}
+                </Button>
+              </>
+            )}
+          </div>
         ) : (
           <article className="space-y-6">
             <section className="grid gap-3 border-b pb-5 sm:grid-cols-[1fr_auto]">

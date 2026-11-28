@@ -114,11 +114,7 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
   const group = groupOf(tree, filters.category)
   const sideGroups = group ? tree.filter((g) => g.group === group) : tree
   const chips = chipsOf(filters, tree, t)
-  const detailQuery = new URLSearchParams()
-  for (const key of ['from', 'ref']) {
-    const value = search.get(key)
-    if (value !== null) detailQuery.set(key, value)
-  }
+  const detailQuery = filtersTo(filters, new URLSearchParams(search.toString()))
 
   return (
     <div className="flex min-h-screen flex-col" data-route-class="authenticated-workspace">

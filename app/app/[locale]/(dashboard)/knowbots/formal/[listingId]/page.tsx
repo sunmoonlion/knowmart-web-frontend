@@ -1,3 +1,4 @@
+import { marketDetailPath } from '@/lib/auth/next-path'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
@@ -18,12 +19,17 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export default async function FormalMethodDetailPage({
   params,
+  searchParams,
 }: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
   params: Promise<{ locale: string; listingId: string }>
 }) {
   const { locale, listingId } = await params
   const validId = UUID.test(listingId) ? listingId : '00000000-0000-0000-0000-000000000000'
-  const session = await requireBrowserSession(locale, `/${locale}/knowbots`)
+  const session = await requireBrowserSession(
+    locale,
+    marketDetailPath(`/${locale}/knowbots/formal/${validId}`, await searchParams),
+  )
   const tAuth = await getTranslations('auth')
 
   return (

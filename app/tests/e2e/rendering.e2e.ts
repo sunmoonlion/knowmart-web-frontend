@@ -231,3 +231,22 @@ test('market navigation comes before method types, and tool and expert subcatego
   await page.getByLabel('业务细类').selectOption('finance.private_fund')
   await expect(page).toHaveURL(/category=finance.private_fund/)
 })
+
+test('anonymous detail requests preserve the chosen entry through the login redirect', async ({
+  page,
+}) => {
+  const id = '61023ed4-24b5-414e-928f-43074ddf28b6'
+  await page.route('**/api/auth/web/login?**', (route) =>
+    route.fulfill({ contentType: 'text/plain', body: 'login fixture' }),
+  )
+  for (const path of [
+    '/en/knowledge/' + id + '?demand=' + id,
+    '/en/knowbots/' + id + '?from=knowbench&ref=task&version=2',
+    '/en/knowbots/formal/' + id + '?demand=' + id,
+  ]) {
+    await page.goto(path)
+    await expect(page).toHaveURL(
+      (url) => url.pathname === '/api/auth/web/login' && url.searchParams.get('return_to') === path,
+    )
+  }
+})

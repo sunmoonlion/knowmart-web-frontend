@@ -267,6 +267,7 @@ export function DemandScreen({ csrfToken, account, demandId }: Props & { demandI
                 {t('demands.close')}
               </Button>
             ) : null}
+            <Problem error={close.error} />
             <section className="space-y-3">
               <h2 className="text-sm font-semibold">
                 {t('responses', { count: d.response_count })}
@@ -323,9 +324,9 @@ function ResponseCard({
   })
   // 选中了、当初没附条目：做好上架再补附（Fable 评审 P2-9）
   const [ref, setRef] = useState('')
-  const [offerKind, setOfferKind] = useState<'knowledge' | 'expert' | 'formal_expert' | 'formal_tool'>(
-    demand.kind === 'knowledge' ? 'knowledge' : 'formal_expert',
-  )
+  const [offerKind, setOfferKind] = useState<
+    'knowledge' | 'expert' | 'formal_expert' | 'formal_tool'
+  >(demand.kind === 'knowledge' ? 'knowledge' : 'formal_expert')
   const attach = useMutation({
     mutationFn: () =>
       attachOffer(csrfToken, response.response_id, {
@@ -338,7 +339,7 @@ function ResponseCard({
     response.listing_kind === 'knowledge' && response.listing_ref
       ? `/${locale}/knowledge/${response.listing_ref}${response.status === 'chosen' && demand.mine ? `?demand=${demand.demand_id}` : ''}`
       : response.listing_kind === 'expert' && response.listing_ref
-        ? `/${locale}/knowbots/${response.listing_ref.split('@')[0]}`
+        ? `/${locale}/knowbots/${encodeURIComponent(response.listing_ref.split('@')[0])}${response.listing_ref.includes('@') ? '?version=' + encodeURIComponent(response.listing_ref.split('@')[1]) : ''}`
         : (response.listing_kind === 'formal_expert' || response.listing_kind === 'formal_tool') &&
             response.listing_ref &&
             !response.listing_ref.includes('@')
@@ -446,6 +447,8 @@ function ResponseEditor({
   const [proposal, setProposal] = useState('')
   const [price, setPrice] = useState('')
   const [days, setDays] = useState('')
+  const validDays =
+    days === '' || (/^[0-9]+$/.test(days) && Number(days) >= 1 && Number(days) <= 365)
   const [ref, setRef] = useState('')
   const send = useMutation({
     mutationFn: () =>
@@ -464,7 +467,7 @@ function ResponseEditor({
       aria-label={t('respond')}
       onSubmit={(event) => {
         event.preventDefault()
-        if (proposal.trim()) send.mutate()
+        if (proposal.trim() && validDays && !send.isPending) send.mutate()
       }}
     >
       <h3 className="text-sm font-semibold">{t('respond')}</h3>
@@ -501,12 +504,14 @@ function ResponseEditor({
           <input
             inputMode="numeric"
             className={inputClass}
+            aria-invalid={!validDays}
             value={days}
             onChange={(e) => setDays(e.target.value)}
           />
         </Field>
+        {!validDays && <p role="alert">{t('invalidOfferDays')}</p>}
       </div>
-      <Button type="submit" size="sm" disabled={!proposal.trim() || send.isPending}>
+      <Button type="submit" size="sm" disabled={!validDays || !proposal.trim() || send.isPending}>
         {send.isPending ? t('working') : t('sendResponse')}
       </Button>
       <Problem error={send.error} />
@@ -532,15 +537,17 @@ export function Thread({
   const messages = useQuery({ queryKey: key, queryFn: () => fetchMessages(kind, id) })
   const [body, setBody] = useState('')
   const send = useMutation({
-    mutationFn: () => postMessage(csrfToken, kind, id, body),
-    onSuccess: () => {
-      setBody('')
+    mutationFn: (submitted: string) => postMessage(csrfToken, kind, id, submitted),
+    onSuccess: (_result, submitted) => {
+      setBody((current) => (current === submitted ? '' : current))
       void client.invalidateQueries({ queryKey: key })
     },
   })
   return (
     <section className="space-y-2" aria-label={title}>
       <h3 className="text-muted-foreground text-xs font-medium">{title}</h3>
+      <Problem error={messages.error} />
+      <Problem error={send.error} />
       <ul className="space-y-1 text-sm">
         {(messages.data?.items ?? []).map((m) => (
           <li key={m.message_id} className={m.mine ? 'text-right' : ''}>
@@ -555,7 +562,7 @@ export function Thread({
         className="flex gap-2"
         onSubmit={(event) => {
           event.preventDefault()
-          if (body.trim()) send.mutate()
+          if (body.trim() && !send.isPending) send.mutate(body)
         }}
       >
         <input

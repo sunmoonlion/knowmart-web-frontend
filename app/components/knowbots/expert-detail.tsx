@@ -16,6 +16,8 @@ import { fetchExpert } from '@/lib/knowbots/catalog'
 import { stopKnowbotVersion, summonReturnUrl } from '@/lib/knowbots/client'
 import { leaveTo } from '@/lib/leave-to'
 import { fetchExpertMarket } from '@/lib/market/client'
+import { ApiClientError } from '@/lib/common/api-client'
+import { filtersTo, filtersFrom } from '@/lib/knowbots/catalog'
 import { cn } from '@/lib/utils'
 
 type Tab = 'canDo' | 'data' | 'delivers' | 'versions' | 'publisher'
@@ -30,7 +32,15 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
   const locale = useLocale()
   const search = useSearchParams()
   const queryClient = useQueryClient()
-  const [version, setVersion] = useState<string | null>(null)
+  const fromLink = search.get('version')
+  const [chosenVersion, setVersion] = useState<{ origin: string; value: string } | null>(null)
+  const originKey = knowbotId + '/' + (fromLink ?? '')
+  const version =
+    chosenVersion?.origin === originKey
+      ? chosenVersion.value
+      : fromLink && /^[1-9][0-9]{0,5}$/.test(fromLink)
+        ? fromLink
+        : null
   const [tab, setTab] = useState<Tab>('canDo')
   const [failed, setFailed] = useState<string | null>(null)
   const expert = useQuery({
@@ -50,11 +60,9 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['web', 'experts', knowbotId] }),
     onError: () => setFailed(t('stopFailed')),
   })
-  const back = new URLSearchParams()
-  for (const key of ['from', 'ref']) {
-    const value = search.get(key)
-    if (value !== null) back.set(key, value)
-  }
+  const catalogParams = new URLSearchParams(search.toString())
+  const back = filtersTo(filtersFrom(catalogParams), catalogParams)
+  const common = useTranslations('common')
   const date = (value: string) => format.dateTime(new Date(value), { dateStyle: 'medium' })
 
   return (
@@ -72,15 +80,24 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
         {expert.isPending ? (
           <p className="text-muted-foreground">{t('loading')}</p>
         ) : expert.isError ? (
-          <p className="text-muted-foreground" role="alert">
-            {t('notFound')}
-          </p>
+          <div role="alert">
+            {expert.error instanceof ApiClientError && expert.error.status === 404 ? (
+              t('notFound')
+            ) : (
+              <>
+                <p>{t('loadFailed')}</p>
+                <Button variant="outline" onClick={() => void expert.refetch()}>
+                  {common('retry')}
+                </Button>
+              </>
+            )}
+          </div>
         ) : (
           <Body
             expert={expert.data}
             tab={expert.data.publisher === null && tab === 'publisher' ? 'canDo' : tab}
             onTab={setTab}
-            onVersion={setVersion}
+            onVersion={(value) => setVersion({ origin: originKey, value })}
             date={date}
             failed={failed}
             action={
@@ -326,7 +343,9 @@ function Body({
                       {t('deliveredAt', { date: date(row.v.delivered_at) })}
                     </span>
                   </span>
-                  {expert.owned && expert.can_stop_here && row.v.status === 'active' ? (
+                  {expert.owned &&
+                  expert.can_stop_here &&
+                  ['active', 'held'].includes(row.v.status) ? (
                     <Button
                       variant="outline"
                       size="sm"

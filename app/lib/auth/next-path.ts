@@ -20,3 +20,26 @@ export function loginPath(locale: string, next?: string | null) {
   const base = `/${locale}/login`
   return next ? `${base}?next=${encodeURIComponent(next)}` : base
 }
+
+export function marketDetailPath(
+  path: string,
+  params: Record<string, string | string[] | undefined>,
+) {
+  const query = new URLSearchParams()
+  for (const key of [
+    'from',
+    'ref',
+    'kind',
+    'category',
+    'q',
+    'updated',
+    'sort',
+    'page',
+    'demand',
+    'version',
+  ]) {
+    const value = params[key]
+    if (typeof value === 'string') query.set(key, value)
+  }
+  return query.size ? path + '?' + query : path
+}

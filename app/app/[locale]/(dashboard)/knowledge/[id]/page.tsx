@@ -1,3 +1,4 @@
+import { marketDetailPath } from '@/lib/auth/next-path'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
@@ -22,7 +23,10 @@ export default async function Page({
 }) {
   const { locale, id } = await params
   const demand = (await searchParams).demand
-  const { csrfToken, account } = await marketSession(locale, `/${locale}/knowledge/${id}`)
+  const { csrfToken, account } = await marketSession(
+    locale,
+    marketDetailPath(`/${locale}/knowledge/${encodeURIComponent(id)}`, { demand }),
+  )
   return (
     <KnowledgeDetail
       csrfToken={csrfToken}

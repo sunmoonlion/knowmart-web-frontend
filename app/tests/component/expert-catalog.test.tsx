@@ -3,6 +3,8 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { NextIntlClientProvider } from 'next-intl'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { ApiClientError } from '@/lib/common/api-client'
+import * as market from '@/lib/market/client'
 import { ExpertCatalog } from '@/components/knowbots/expert-catalog'
 import { ExpertDetail } from '@/components/knowbots/expert-detail'
 import type { ExpertDetail as Detail, ExpertList } from '@/contracts/experts'
@@ -351,8 +353,92 @@ describe('专家详情', () => {
     await screen.findByRole('heading', { name: '财务分析与预测' })
     fireEvent.change(screen.getByLabelText('版本'), { target: { value: '1' } })
     await waitFor(() => expect(fetchExpert).toHaveBeenLastCalledWith(ID, '1'))
-    vi.mocked(fetchExpert).mockRejectedValue(new Error('not found'))
+    vi.mocked(fetchExpert).mockRejectedValue(
+      new ApiClientError(404, {
+        code: 'not_found',
+        message_key: 'errors.missing',
+        retryable: false,
+        correlation_id: 'case-404',
+      }),
+    )
     page(<ExpertDetail knowbotId={'1' + ID.slice(1)} csrfToken={CSRF} account={null} />)
     expect(await screen.findByText(messages.experts.notFound)).toBeInTheDocument()
   })
 })
+
+it('retries a broken detail read without claiming the expert is missing', async () => {
+  vi.mocked(fetchExpert)
+    .mockRejectedValueOnce(new TypeError('connection'))
+    .mockResolvedValue(detail)
+  page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent(messages.experts.loadFailed)
+  expect(alert).not.toHaveTextContent(messages.experts.notFound)
+  fireEvent.click(within(alert).getByRole('button', { name: messages.common.retry }))
+  expect(await screen.findByRole('heading', { name: detail.name })).toBeVisible()
+})
+it('carries the original filters in both directions and the exact offered version into detail', async () => {
+  nav.search = 'from=knowbench&ref=task&category=finance&q=cash&page=3'
+  const catalog = page(<ExpertCatalog csrfToken={CSRF} account={null} />)
+  const href = (await screen.findByRole('link', { name: detail.name })).getAttribute('href')!
+  expect(href).toBe('/zh-CN/knowbots/' + ID + '?' + nav.search)
+  catalog.unmount()
+  const original = nav.search
+  nav.search += '&version=2'
+  page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+  expect(await screen.findByRole('link', { name: messages.experts.back })).toHaveAttribute(
+    'href',
+    '/zh-CN/knowbots?' + original,
+  )
+  expect(fetchExpert).toHaveBeenCalledWith(ID, '2')
+})
+it('lets a market owner stop an owned held version', async () => {
+  vi.mocked(fetchExpert).mockResolvedValue({
+    ...detail,
+    versions: [{ ...detail.versions[0], status: 'held' }],
+  })
+  page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+  fireEvent.click(await screen.findByRole('tab', { name: '版本记录' }))
+  fireEvent.click(screen.getByRole('button', { name: '停用' }))
+  await waitFor(() => expect(stopKnowbotVersion).toHaveBeenCalledWith(ID, '1', CSRF))
+})
+it.each(['tool', 'expert'] as const)(
+  'sends the exact formal %s listing from the workbench catalog',
+  async (kind) => {
+    nav.search = 'from=knowbench&ref=work&kind=' + kind
+    origin.data = { app: 'knowbench', ref: 'work', return_url: 'https://work.example.test/' }
+    const acquire = vi.spyOn(market, 'acquireFormalListing').mockResolvedValue({} as never)
+    const summon = vi
+      .spyOn(market, 'formalSummonReturnUrl')
+      .mockResolvedValue('https://work.example.test/')
+    vi.mocked(fetchExperts).mockResolvedValue({
+      ...list,
+      items: [
+        {
+          listing_id: ID,
+          reference: { method_id: ID, version: 2, digest: 'sha256:' + 'a'.repeat(64) },
+          method_kind: kind,
+          name: '核验单',
+          tagline: '核验',
+          category,
+          updated_at: '2026-10-18T00:00:00Z',
+        },
+      ],
+    })
+    page(<ExpertCatalog csrfToken={CSRF} account={null} />)
+    const link = await screen.findByRole('link', { name: '核验单' })
+    expect(link.getAttribute('href')).toContain('/knowbots/formal/' + ID)
+    fireEvent.click(
+      within(link.closest('article')!).getByRole('button', {
+        name: kind === 'tool' ? messages.experts.acquireTool : messages.experts.summon,
+      }),
+    )
+    await waitFor(() =>
+      kind === 'tool'
+        ? expect(acquire).toHaveBeenCalledWith(CSRF, ID)
+        : expect(summon).toHaveBeenCalledWith(CSRF, ID, { app: 'knowbench', ref: 'work' }),
+    )
+    acquire.mockRestore()
+    summon.mockRestore()
+  },
+)

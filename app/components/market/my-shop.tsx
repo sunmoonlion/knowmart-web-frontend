@@ -34,14 +34,7 @@ import { Badge, Field, inputClass, Price, Problem, Stars } from './parts'
 import { PublisherPanel } from './publisher'
 
 type Props = { csrfToken: string; account: React.ReactNode }
-const TABS = [
-  'formalMethods',
-  'knowledge',
-  'demands',
-  'responses',
-  'trades',
-  'owner',
-] as const
+const TABS = ['formalMethods', 'knowledge', 'demands', 'responses', 'trades', 'owner'] as const
 type Tab = (typeof TABS)[number]
 
 const TONE: Record<string, 'muted' | 'ok' | 'warn' | 'bad'> = {
@@ -99,7 +92,9 @@ export function MyShopScreen({ csrfToken, account }: Props) {
           <div className="space-y-8">
             <MyFormalMethods csrfToken={csrfToken} platform={!!shop.data?.shop.platform} />
             <details className="rounded-xl border p-4">
-              <summary className="cursor-pointer text-sm font-medium">{t('myShop.experts')}</summary>
+              <summary className="cursor-pointer text-sm font-medium">
+                {t('myShop.experts')}
+              </summary>
               <div className="pt-3">
                 <MyExperts csrfToken={csrfToken} />
               </div>
@@ -240,6 +235,7 @@ function MyListings({ csrfToken }: { csrfToken: string }) {
       </div>
       {editing ? (
         <ListingEditor
+          key={editing === 'new' ? 'new' : editing.listing_id}
           csrfToken={csrfToken}
           listing={editing === 'new' ? null : editing}
           onDone={() => {
@@ -333,6 +329,10 @@ function ListingEditor({
   })
   const chosen = new Set(form.items.map((i) => i.item_id))
   const ready =
+    materials.isSuccess &&
+    form.items.every((item) =>
+      materials.data.items.some((file) => file.material_id === item.item_id && file.sellable),
+    ) &&
     form.title.trim() &&
     form.description.trim() &&
     form.rights_statement.trim() &&
@@ -379,9 +379,33 @@ function ListingEditor({
       <fieldset className="space-y-1 text-sm">
         <legend className="font-medium">{t('mine.files')}</legend>
         {materials.isError ? <Problem error={materials.error} /> : null}
-        {(materials.data?.items ?? []).length === 0 && !materials.isPending ? (
+        {materials.isSuccess && materials.data.items.length === 0 ? (
           <p className="text-muted-foreground text-xs">{t('mine.noFiles')}</p>
         ) : null}
+        {materials.isSuccess &&
+          form.items
+            .filter(
+              (item) => !materials.data.items.some((file) => file.material_id === item.item_id),
+            )
+            .map((item) => (
+              <label key={item.item_id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked
+                  onChange={() =>
+                    setForm({
+                      ...form,
+                      items: form.items.filter((entry) => entry.item_id !== item.item_id),
+                    })
+                  }
+                />
+                {t('mine.missingFile', {
+                  name:
+                    listing?.items.find((file) => file.item_id === item.item_id)?.name ||
+                    item.item_id,
+                })}
+              </label>
+            ))}
         {(materials.data?.items ?? []).map((file) => (
           <label key={file.material_id} className="flex items-center gap-2">
             <input
@@ -574,6 +598,9 @@ function MyDemands() {
   const t = useTranslations('marketUi')
   const locale = useLocale()
   const demands = useQuery({ queryKey: ['market', 'my-demands'] as const, queryFn: fetchMyDemands })
+  if (demands.isPending) return <p>{t('loading')}</p>
+  if (demands.isError) return <Problem error={demands.error} />
+  if (!demands.data.items.length) return <p>{t('mine.noDemands')}</p>
   return (
     <ul className="divide-y rounded-xl border" aria-label={t('myShop.demands')}>
       {(demands.data?.items ?? []).map((d) => (
@@ -600,6 +627,9 @@ function MyResponses() {
     queryKey: ['market', 'my-responses'] as const,
     queryFn: fetchMyResponses,
   })
+  if (responses.isPending) return <p>{t('loading')}</p>
+  if (responses.isError) return <Problem error={responses.error} />
+  if (!responses.data.items.length) return <p>{t('mine.noResponses')}</p>
   return (
     <ul className="divide-y rounded-xl border" aria-label={t('myShop.responses')}>
       {(responses.data?.items ?? []).map((r) => (

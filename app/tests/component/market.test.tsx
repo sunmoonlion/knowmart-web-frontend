@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { NextIntlClientProvider } from 'next-intl'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { DemandScreen } from '@/components/market/demands'
+import { DemandScreen, Thread } from '@/components/market/demands'
 import { KnowledgeDetail } from '@/components/market/knowledge-market'
 import { MyShopScreen } from '@/components/market/my-shop'
 import { ShopList, ShopScreen } from '@/components/market/shops'
@@ -697,3 +697,194 @@ describe('供需市场', () => {
     await waitFor(() => expect(client.renameShop).toHaveBeenCalledWith(CSRF, '甲店'))
   })
 })
+
+it('retains a newer unsent message and reports a failed read or send', async () => {
+  let done!: () => void
+  vi.mocked(client.fetchMessages).mockRejectedValue(new Error('read'))
+  vi.mocked(client.postMessage)
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          done = () => resolve({} as never)
+        }),
+    )
+    .mockRejectedValueOnce(new Error('send'))
+  page(<Thread csrfToken={CSRF} kind="demand" id="d1" title="留言" />)
+  expect(await screen.findByRole('alert')).toBeVisible()
+  const input = screen.getByRole('textbox', { name: messages.marketUi.message })
+  const send = screen.getByRole('button', { name: messages.marketUi.send })
+  fireEvent.change(input, { target: { value: '第一条' } })
+  fireEvent.click(send)
+  await waitFor(() =>
+    expect(client.postMessage).toHaveBeenCalledWith(CSRF, 'demand', 'd1', '第一条'),
+  )
+  fireEvent.change(input, { target: { value: '下一条' } })
+  done()
+  await waitFor(() => expect(send).toBeEnabled())
+  expect(input).toHaveValue('下一条')
+  fireEvent.click(send)
+  await waitFor(() => expect(screen.getAllByRole('alert')).toHaveLength(2))
+  expect(input).toHaveValue('下一条')
+})
+it('shows a failed demand closure', async () => {
+  vi.mocked(client.fetchDemand).mockResolvedValue(demand({ mine: true }))
+  vi.mocked(client.closeDemand).mockRejectedValue(new Error('temporarily unavailable'))
+  page(<DemandScreen csrfToken={CSRF} account={null} demandId="d1" />)
+  fireEvent.click(await screen.findByRole('button', { name: messages.marketUi.demands.close }))
+  expect(await screen.findByRole('alert')).toBeVisible()
+})
+it('rejects invalid delivery times and preserves the number for a valid offer', async () => {
+  vi.mocked(client.fetchDemand).mockResolvedValue(demand())
+  page(<DemandScreen csrfToken={CSRF} account={null} demandId="d1" />)
+  const form = within(await screen.findByRole('form', { name: '响应这条需求' }))
+  fireEvent.change(form.getByLabelText(messages.marketUi.proposal), { target: { value: '可交付' } })
+  const input = form.getByLabelText(messages.marketUi.offerDays)
+  const send = form.getByRole('button', { name: messages.marketUi.sendResponse })
+  for (const invalid of ['七天', '0', '366', '1.5']) {
+    fireEvent.change(input, { target: { value: invalid } })
+    expect(send).toBeDisabled()
+    expect(form.getByRole('alert')).toHaveTextContent(messages.marketUi.invalidOfferDays)
+  }
+  fireEvent.change(input, { target: { value: '7' } })
+  fireEvent.click(send)
+  await waitFor(() =>
+    expect(client.respond).toHaveBeenCalledWith(CSRF, 'd1', expect.objectContaining({ days: 7 })),
+  )
+})
+it('opens the exact expert version attached by the seller', async () => {
+  vi.mocked(client.fetchDemand).mockResolvedValue(
+    demand({
+      mine: true,
+      responses: [
+        {
+          response_id: 'r',
+          demand_id: 'd1',
+          listing_kind: 'expert',
+          listing_ref: 'expert-id@4',
+          proposal: '具体版本',
+          price: null,
+          days: null,
+          status: 'open',
+          mine: false,
+          to_me: true,
+          created_at: null,
+        },
+      ],
+    }),
+  )
+  page(<DemandScreen csrfToken={CSRF} account={null} demandId="d1" />)
+  const article = (await screen.findByText('具体版本')).closest('article')!
+  expect(within(article).getByRole('link')).toHaveAttribute(
+    'href',
+    '/zh-CN/knowbots/expert-id?version=4',
+  )
+})
+
+it('switches listing drafts by id and allows removing a file no longer shared', async () => {
+  const rows: Listing[] = ['A', 'B'].map((id) => ({
+    ...LISTING,
+    listing_id: id,
+    title: id,
+    status: 'draft',
+    items: [{ item_id: 'file-' + id, name: id + '资料', media_type: 'text/plain', size_bytes: 4 }],
+  }))
+  const file = {
+    material_id: 'file-C',
+    name: '补充资料',
+    mine: true,
+    sellable: true,
+    license: 'sale' as const,
+    version_no: 1,
+    media_type: 'text/plain',
+    size_bytes: 4,
+    sha256: 'c'.repeat(64),
+  }
+  vi.mocked(client.fetchMyListings).mockResolvedValue({ items: rows })
+  vi.mocked(client.fetchMyMaterials).mockResolvedValue({ items: [file] })
+  vi.mocked(client.updateListing).mockResolvedValue({ listing: rows[1] })
+  page(<MyShopScreen csrfToken={CSRF} account={null} />)
+  fireEvent.click(screen.getByRole('tab', { name: messages.marketUi.myShop.knowledge }))
+  const buttons = await screen.findAllByRole('button', { name: messages.marketUi.edit })
+  fireEvent.click(buttons[0])
+  fireEvent.click(buttons[1])
+  const form = within(screen.getByRole('form', { name: messages.marketUi.mine.listingForm }))
+  expect(form.getByLabelText(messages.marketUi.mine.listingTitle)).toHaveValue('B')
+  fireEvent.click(await form.findByLabelText(/B资料/))
+  const save = form.getByRole('button', { name: messages.marketUi.save })
+  expect(save).toBeDisabled()
+  fireEvent.click(form.getByLabelText('补充资料'))
+  fireEvent.click(save)
+  await waitFor(() =>
+    expect(client.updateListing).toHaveBeenCalledWith(
+      CSRF,
+      'B',
+      expect.objectContaining({ title: 'B', items: [{ item_id: 'file-C' }] }),
+    ),
+  )
+})
+it('binds a qualification to the chosen photo and resets document kind after a change of identity', async () => {
+  const identity = {
+    publisher_id: 'p',
+    kind: 'individual' as const,
+    name: '工作室',
+    review_status: 'approved' as const,
+    review_note: null,
+    real_name_verified: true,
+    reviewed_at: null,
+  }
+  const photos = ['photo-1', 'photo-2'].map((document_id) => ({
+    document_id,
+    kind: 'license' as const,
+    purged: false,
+    media_type: 'image/png',
+    size_bytes: 4,
+    created_at: null,
+  }))
+  vi.mocked(client.fetchMyPublisher).mockResolvedValue({
+    publisher: identity,
+    documents: photos,
+    licenses: [],
+  })
+  page(<MyShopScreen csrfToken={CSRF} account={null} />)
+  fireEvent.click(screen.getByRole('tab', { name: messages.marketUi.myShop.owner }))
+  const ui = messages.marketUi.publisher
+  const select = await screen.findByLabelText(ui.licensePhoto)
+  fireEvent.change(screen.getByLabelText(ui.licenseName), { target: { value: '第二张资质' } })
+  fireEvent.change(screen.getByLabelText(ui.licenseNo), { target: { value: '2' } })
+  const add = within(screen.getByRole('region', {name:ui.licenses})).getByRole('button', { name: ui.addLicense })
+  expect(add).toBeDisabled()
+  fireEvent.change(select, { target: { value: 'photo-2' } })
+  fireEvent.change(screen.getByLabelText(ui.documentKind), { target: { value: 'id_back' } })
+  vi.mocked(client.fetchMyPublisher).mockResolvedValue({
+    publisher: { ...identity, kind: 'organization' },
+    documents: photos,
+    licenses: [],
+  })
+  vi.mocked(client.addLicense).mockResolvedValue({} as never)
+  fireEvent.click(add)
+  await waitFor(() =>
+    expect(client.addLicense).toHaveBeenCalledWith(
+      CSRF,
+      expect.objectContaining({ document_id: 'photo-2' }),
+    ),
+  )
+  await waitFor(() =>
+    expect(screen.getByLabelText(ui.documentKind)).toHaveValue('business_license'),
+  )
+  const file = new File(['test'], 'example.png', { type: 'image/png' })
+  fireEvent.change(screen.getByLabelText(ui.choosePhoto), { target: { files: [file] } })
+  await waitFor(() =>
+    expect(client.uploadDocument).toHaveBeenCalledWith(file, 'business_license', CSRF),
+  )
+})
+it.each(['demands', 'responses'] as const)(
+  'shows the failure to read the owner’s %s',
+  async (tab) => {
+    const query = tab === 'demands' ? client.fetchMyDemands : client.fetchMyResponses
+    vi.mocked(query).mockRejectedValue(new Error('temporarily unavailable'))
+    page(<MyShopScreen csrfToken={CSRF} account={null} />)
+    fireEvent.click(screen.getByRole('tab', { name: messages.marketUi.myShop[tab] }))
+    expect(screen.getByText(messages.marketUi.loading)).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent(messages.marketUi.problem.failed)
+  },
+)
