@@ -5,7 +5,7 @@ import { PanelLeftCloseIcon, PanelLeftOpenIcon, XIcon } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
 import { DemoExpertGallery } from '@/components/knowbots/demo-expert-gallery'
 import { CrossAppLink } from '@/components/common/cross-app-link'
@@ -70,9 +70,11 @@ export function ExpertCatalog({ csrfToken, account }: Props) {
   const collapsed = useSyncExternalStore(watchCollapsed, readCollapsed, () => false)
   const [words, setWords] = useState(filters.q)
 
-  useEffect(() => {
+  const [previousQuery, setPreviousQuery] = useState(filters.q)
+  if (filters.q !== previousQuery) {
+    setPreviousQuery(filters.q)
     setWords(filters.q)
-  }, [filters.q])
+  }
 
   const go = (next: Partial<CatalogFilters>) => {
     if ('q' in next && next.q !== undefined) {
