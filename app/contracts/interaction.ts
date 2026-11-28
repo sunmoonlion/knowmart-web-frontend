@@ -140,7 +140,7 @@ export const apiErrorSchema = z
       })
       .strict(),
   })
-  .strict()
+  .strip()
 
 export type Citation = z.infer<typeof citationSchema>
 export type RunSnapshot = z.infer<typeof runSnapshotSchema>
