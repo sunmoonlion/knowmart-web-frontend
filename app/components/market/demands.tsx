@@ -335,11 +335,18 @@ function ResponseCard({
       }),
     onSuccess: onChanged,
   })
+  const expertQuery = new URLSearchParams()
+  const [expertId, expertVersion] = response.listing_ref?.split('@') ?? []
+  if (expertVersion) expertQuery.set('version', expertVersion)
+  if (demand.mine && response.status === 'chosen') {
+    expertQuery.set('demand', demand.demand_id)
+    expertQuery.set('response', response.response_id)
+  }
   const offered =
     response.listing_kind === 'knowledge' && response.listing_ref
       ? `/${locale}/knowledge/${response.listing_ref}${response.status === 'chosen' && demand.mine ? `?demand=${demand.demand_id}` : ''}`
       : response.listing_kind === 'expert' && response.listing_ref
-        ? `/${locale}/knowbots/${encodeURIComponent(response.listing_ref.split('@')[0])}${response.listing_ref.includes('@') ? '?version=' + encodeURIComponent(response.listing_ref.split('@')[1]) : ''}`
+        ? `/${locale}/knowbots/${encodeURIComponent(expertId)}${expertQuery.size ? `?${expertQuery}` : ''}`
         : (response.listing_kind === 'formal_expert' || response.listing_kind === 'formal_tool') &&
             response.listing_ref &&
             !response.listing_ref.includes('@')

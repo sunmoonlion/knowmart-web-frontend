@@ -29,14 +29,19 @@ export async function stopKnowbotVersion(
 export async function summonReturnUrl(
   knowbotId: string,
   version: string,
-  origin: { app: string; ref: string | null },
+  origin: { app: string; ref: string | null; demand_id?: string; response_id?: string },
   csrfToken: string,
 ): Promise<string> {
   const parsed = summonReturnSchema.safeParse(
     await requestJson(versionPath(knowbotId, version, 'summon-return'), {
       method: 'POST',
       csrfToken,
-      body: origin.ref === null ? { from: origin.app } : { from: origin.app, ref: origin.ref },
+      body: {
+        from: origin.app,
+        ...(origin.ref === null ? {} : { ref: origin.ref }),
+        demand_id: origin.demand_id,
+        response_id: origin.response_id,
+      },
     }),
   )
   if (!parsed.success) throw new KnowbotContractError({ cause: parsed.error })

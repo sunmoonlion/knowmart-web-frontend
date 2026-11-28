@@ -442,3 +442,19 @@ it.each(['tool', 'expert'] as const)(
     summon.mockRestore()
   },
 )
+
+it('submits the selected demand and response when settling the offered version', async () => {
+  nav.search = 'version=1&demand=d1&response=r2'
+  vi.mocked(fetchExpert).mockResolvedValue(detail)
+  vi.mocked(summonReturnUrl).mockResolvedValue('https://knowbench.example')
+  page(<ExpertDetail knowbotId={ID} csrfToken={CSRF} account={null} />)
+  fireEvent.click(await screen.findByRole('button', { name: '请这位' }))
+  await waitFor(() =>
+    expect(summonReturnUrl).toHaveBeenCalledWith(
+      ID,
+      '1',
+      { app: 'knowbench', ref: 'expert', demand_id: 'd1', response_id: 'r2' },
+      CSRF,
+    ),
+  )
+})

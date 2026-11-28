@@ -48,10 +48,22 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
     queryFn: () => fetchExpert(knowbotId, version),
   })
   const origin = useCrossAppOrigin()
-  const summoning = origin.data?.return_url ? origin.data : null
+  const demand = search.get('demand')
+  const response = search.get('response')
+  const settlement = demand && response ? { demand_id: demand, response_id: response } : null
+  const summoning = origin.data?.return_url
+    ? origin.data
+    : settlement
+      ? { app: 'knowbench', ref: 'expert' }
+      : null
   const summon = useMutation({
     mutationFn: (chosen: string) =>
-      summonReturnUrl(knowbotId, chosen, { app: summoning!.app, ref: summoning!.ref }, csrfToken),
+      summonReturnUrl(
+        knowbotId,
+        chosen,
+        { app: summoning!.app, ref: summoning!.ref, ...settlement },
+        csrfToken,
+      ),
     onSuccess: (url) => leaveTo(url),
     onError: () => setFailed(t('summonFailed')),
   })
@@ -104,7 +116,9 @@ export function ExpertDetail({ knowbotId, csrfToken, account }: Props) {
               summoning ? (
                 expert.data.summonable ? (
                   <Button
-                    disabled={summon.isPending}
+                    disabled={
+                      summon.isPending || (!!settlement && expert.data.version !== fromLink)
+                    }
                     onClick={() => {
                       setFailed(null)
                       summon.mutate(expert.data.version)

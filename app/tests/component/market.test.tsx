@@ -751,34 +751,37 @@ it('rejects invalid delivery times and preserves the number for a valid offer', 
     expect(client.respond).toHaveBeenCalledWith(CSRF, 'd1', expect.objectContaining({ days: 7 })),
   )
 })
-it('opens the exact expert version attached by the seller', async () => {
-  vi.mocked(client.fetchDemand).mockResolvedValue(
-    demand({
-      mine: true,
-      responses: [
-        {
-          response_id: 'r',
-          demand_id: 'd1',
-          listing_kind: 'expert',
-          listing_ref: 'expert-id@4',
-          proposal: '具体版本',
-          price: null,
-          days: null,
-          status: 'open',
-          mine: false,
-          to_me: true,
-          created_at: null,
-        },
-      ],
-    }),
-  )
-  page(<DemandScreen csrfToken={CSRF} account={null} demandId="d1" />)
-  const article = (await screen.findByText('具体版本')).closest('article')!
-  expect(within(article).getByRole('link')).toHaveAttribute(
-    'href',
-    '/zh-CN/knowbots/expert-id?version=4',
-  )
-})
+it.each(['open', 'chosen'] as const)(
+  'opens the exact expert version of a %s response',
+  async (status) => {
+    vi.mocked(client.fetchDemand).mockResolvedValue(
+      demand({
+        mine: true,
+        responses: [
+          {
+            response_id: 'r',
+            demand_id: 'd1',
+            listing_kind: 'expert',
+            listing_ref: 'expert-id@4',
+            proposal: '具体版本',
+            price: null,
+            days: null,
+            status,
+            mine: false,
+            to_me: true,
+            created_at: null,
+          },
+        ],
+      }),
+    )
+    page(<DemandScreen csrfToken={CSRF} account={null} demandId="d1" />)
+    const article = (await screen.findByText('具体版本')).closest('article')!
+    expect(within(article).getByRole('link')).toHaveAttribute(
+      'href',
+      '/zh-CN/knowbots/expert-id?version=4' + (status === 'chosen' ? '&demand=d1&response=r' : ''),
+    )
+  },
+)
 
 it('switches listing drafts by id and allows removing a file no longer shared', async () => {
   const rows: Listing[] = ['A', 'B'].map((id) => ({
@@ -851,7 +854,9 @@ it('binds a qualification to the chosen photo and resets document kind after a c
   const select = await screen.findByLabelText(ui.licensePhoto)
   fireEvent.change(screen.getByLabelText(ui.licenseName), { target: { value: '第二张资质' } })
   fireEvent.change(screen.getByLabelText(ui.licenseNo), { target: { value: '2' } })
-  const add = within(screen.getByRole('region', {name:ui.licenses})).getByRole('button', { name: ui.addLicense })
+  const add = within(screen.getByRole('region', { name: ui.licenses })).getByRole('button', {
+    name: ui.addLicense,
+  })
   expect(add).toBeDisabled()
   fireEvent.change(select, { target: { value: 'photo-2' } })
   fireEvent.change(screen.getByLabelText(ui.documentKind), { target: { value: 'id_back' } })
